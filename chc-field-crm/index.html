@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHC Field CRM</title>
+<meta name="theme-color" content="#1f4d3f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Field CRM">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#fffdf8; --ink:#1d2321; --muted:#68706b; --line:#e2ddd1; --line2:#d3ccbc;
+  --brand:#1f4d3f; --brand2:#2f6b57; --brand-soft:#e3ece6;
+  --amber:#b7791f; --amber-soft:#fbefd5; --green:#2f7a4f; --green-soft:#e1f0e6;
+  --gray:#7b817d; --gray-soft:#eceae4; --red:#b23a2e; --red-soft:#f8e2de; --blue:#2a5d8f;
+  --r:12px; --shadow:0 1px 2px rgba(29,35,33,.06),0 4px 14px rgba(29,35,33,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--brand2)}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+/* layout */
+header.top{position:sticky;top:0;z-index:20;background:var(--brand);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 16px}
+header.top .logo{font-weight:700;letter-spacing:.2px;font-size:16px;display:flex;align-items:center;gap:8px}
+header.top .logo i{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#f2c14e;color:var(--brand);font-style:normal;font-size:13px;font-weight:700}
+header.top .sync{margin-left:auto;font-size:12px;opacity:.85;display:flex;align-items:center;gap:6px;white-space:nowrap}
+header.top .sync b{width:8px;height:8px;border-radius:50%;background:#9bd3a9;display:inline-block}
+header.top .sync.warn b{background:#f2c14e}
+nav.tabs{display:flex;gap:4px;padding:0 12px;background:var(--brand);position:sticky;top:46px;z-index:19}
+nav.tabs button{flex:0 0 auto;border:0;background:none;color:#cfe0d7;padding:10px 14px;font-weight:600;border-bottom:3px solid transparent;cursor:pointer}
+nav.tabs button.on{color:#fff;border-bottom-color:#f2c14e}
+main{max-width:1100px;margin:0 auto;padding:16px 14px 90px}
+@media (max-width:700px){
+  nav.tabs{position:fixed;bottom:0;top:auto;left:0;right:0;padding:0 0 env(safe-area-inset-bottom);background:var(--panel);border-top:1px solid var(--line);justify-content:space-around}
+  nav.tabs button{color:var(--muted);border-bottom:0;border-top:3px solid transparent;padding:9px 6px 11px;font-size:13px;flex:1}
+  nav.tabs button.on{color:var(--brand);border-top-color:var(--brand)}
+  main{padding:12px 10px 96px}
+}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+h2{font-size:20px;margin:0}
+h3{font-size:15px;margin:0 0 8px}
+.sub{color:var(--muted);font-size:13px}
+.btn{border:1px solid var(--line2);background:var(--panel);border-radius:9px;padding:8px 12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:var(--brand2)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand2)}
+.btn.sm{padding:5px 9px;font-size:13px;border-radius:8px}
+.btn.danger{color:var(--red);border-color:#e6bdb7}
+.btn.ghost{border-color:transparent;background:none}
+.btn.wa{background:#e3f6e8;border-color:#bfe3c8;color:#17663a}
+.btn:disabled{opacity:.5;cursor:default}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line2);background:var(--panel);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer;font-weight:500}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip .n{opacity:.65;margin-left:4px}
+.tag{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:600;background:var(--gray-soft);color:var(--muted)}
+.tag.active{background:var(--green-soft);color:var(--green)}
+.tag.pending{background:var(--amber-soft);color:var(--amber)}
+.tag.completed{background:var(--gray-soft);color:var(--gray)}
+.tag.skill{background:var(--brand-soft);color:var(--brand)}
+.tag.fail{background:var(--red-soft);color:var(--red)}
+.tag.pass{background:var(--green-soft);color:var(--green)}
+.tag.sched{background:#e4ecf6;color:var(--blue)}
+input[type=text],input[type=tel],input[type=number],input[type=date],input[type=search],input[type=email],select,textarea{width:100%;border:1px solid var(--line2);border-radius:9px;padding:9px 10px;background:#fff;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(47,107,87,.15)}
+textarea{min-height:80px;resize:vertical}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);cursor:pointer;position:relative}
+.card:hover{border-color:var(--line2)}
+.card.pending{border-left:5px solid #e0a63a}
+.card.active{border-left:5px solid #3d8a5c}
+.card.completed{border-left:5px solid #b9bcb8}
+.card .addr{font-weight:600;font-size:15px}
+.card .meta{color:var(--muted);font-size:13px;margin-top:2px}
+.bar{height:6px;border-radius:4px;background:var(--gray-soft);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--brand2)}
+.bar.over i{background:var(--red)}
+.empty{border:1.5px dashed var(--line2);border-radius:var(--r);padding:28px;text-align:center;color:var(--muted);background:rgba(255,255,255,.4)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.stat b{display:block;font-size:22px;font-family:"IBM Plex Mono",monospace}
+.stat span{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.warnbox{background:var(--red-soft);color:#7d2219;border-radius:10px;padding:8px 12px;font-size:13px;margin:8px 0}
+.infobox{background:var(--amber-soft);color:#6e4710;border-radius:10px;padding:8px 12px;font-size:13px;margin:8px 0}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(20,25,23,.42);z-index:50;display:flex;justify-content:flex-end}
+.sheet{background:var(--bg);width:min(680px,100%);height:100%;overflow:auto;box-shadow:-10px 0 30px rgba(0,0,0,.15);display:flex;flex-direction:column}
+.sheet .sh{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:10px;z-index:2}
+.sheet .sh h2{font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.sheet .sb{padding:14px;display:flex;flex-direction:column;gap:12px}
+.sheet .sf{position:sticky;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;justify-content:flex-end}
+@media (max-width:700px){.scrim{align-items:flex-end}.sheet{height:94%;border-radius:16px 16px 0 0;width:100%}}
+.dialog{position:fixed;inset:0;z-index:80;background:rgba(20,25,23,.45);display:grid;place-items:center;padding:16px}
+.dialog .box{background:var(--panel);border-radius:14px;padding:18px;max-width:380px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 10px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;word-break:break-word}
+.seg{display:inline-flex;background:var(--gray-soft);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.checks{display:flex;flex-direction:column}
+.checks label{display:flex;gap:10px;align-items:flex-start;padding:8px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.checks label:last-child{border-bottom:0}
+.checks input{width:18px;height:18px;margin-top:1px;accent-color:var(--brand);flex:0 0 auto}
+.checks label.done span{color:var(--muted);text-decoration:line-through}
+.checks .x{margin-left:auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.toggle:last-child{border-bottom:0}
+.sw{position:relative;width:42px;height:24px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#cfcabd;border-radius:999px;transition:.15s;cursor:pointer}
+.sw span:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+.sw input:checked+span{background:var(--brand2)}
+.sw input:checked+span:before{transform:translateX(18px)}
+.list{display:flex;flex-direction:column;gap:6px}
+.li{display:flex;gap:10px;align-items:center;padding:9px 10px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.li .grow{flex:1;min-width:0}
+.li .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .s{font-size:12px;color:var(--muted)}
+.pickl{max-height:240px;overflow:auto;border:1px solid var(--line2);border-radius:9px;background:#fff}
+.pickl label{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.pickl label:last-child{border-bottom:0}
+.pickl input{accent-color:var(--brand);width:17px;height:17px}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 14px;border-radius:10px;z-index:99;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:90%}
+.thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--gray-soft);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--muted);flex:0 0 auto}
+.section-title{display:flex;align-items:center;gap:8px;margin:18px 0 8px}
+.section-title h3{margin:0}
+/* map */
+.mapwrap{display:grid;grid-template-columns:1fr 300px;gap:12px;height:calc(100vh - 170px);min-height:480px}
+@media (max-width:860px){.mapwrap{grid-template-columns:1fr;height:auto}.mapbox{height:62vh}}
+.mapbox{position:relative;background:#e9efe6;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;touch-action:none}
+.mapbox svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
+.mapbox svg.dragging{cursor:grabbing}
+.mapctl{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.mapctl button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line2);background:#fff;font-size:18px;font-weight:600;cursor:pointer}
+.mappop{position:absolute;left:10px;bottom:10px;right:10px;max-width:360px;background:#fff;border-radius:12px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.maplegend{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.9);border-radius:9px;padding:6px 9px;font-size:12px;color:var(--muted)}
+.side{display:flex;flex-direction:column;gap:8px;overflow:auto}
+.calc-out{background:var(--brand);color:#fff;border-radius:12px;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.calc-out b{display:block;font-size:24px;font-family:"IBM Plex Mono",monospace}
+.calc-out span{font-size:12px;opacity:.8}
+.surf{display:grid;grid-template-columns:1.3fr 1fr 1fr auto auto;gap:6px;align-items:center;margin-bottom:6px}
+.surf input,.surf select{padding:7px 8px}
+@media (max-width:560px){.surf{grid-template-columns:1fr 1fr 1fr auto}.surf .nm{grid-column:1/-1}}
+.log{font-size:14px}
+.log .e{padding:7px 0;border-bottom:1px solid var(--line)}
+.log .e small{color:var(--muted);display:block;font-size:12px}
+.pill-btns{display:flex;gap:6px;flex-wrap:wrap}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><i>CH</i> Field CRM</div>
+  <div class="sync" id="sync"><b></b><span>Connecting…</span></div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-tab="projects">Projects</button>
+  <button data-tab="contractors">Contractors</button>
+  <button data-tab="map">Map</button>
+  <button data-tab="office">Office</button>
+</nav>
+<main id="main"></main>
+<div id="layer"></div>
+
+<script>
+(function(){
+"use strict";
+/* ============ constants ============ */
+const CITIES = {
+  "Riverside":[33.9533,-117.3962],"Colton":[34.0739,-117.3137],"Jurupa Valley":[33.9922,-117.4855],
+  "Fontana":[34.0922,-117.4350],"San Bernardino":[34.1083,-117.2898],"Rancho Cucamonga":[34.1064,-117.5931],
+  "Ontario":[34.0633,-117.6509],"Eastvale":[33.9525,-117.5848],"Corona":[33.8753,-117.5664],
+  "Norco":[33.9311,-117.5487],"Highland":[34.1283,-117.2086],"Redlands":[34.0556,-117.1825],
+  "Yucaipa":[34.0336,-117.0431],"Moreno Valley":[33.9425,-117.2297],"Lake Elsinore":[33.6681,-117.3273],
+  "Perris":[33.7825,-117.2286],"Menifee":[33.6971,-117.1850],"Winchester":[33.7067,-117.0847],
+  "Murrieta":[33.5539,-117.2139],"French Valley":[33.5964,-117.1000],"Temecula":[33.4936,-117.1484],
+  "Hemet":[33.7475,-116.9720],"Beaumont":[33.9295,-116.9773]
+};
+const FREEWAYS = [
+  ["10",[[34.07,-117.75],[34.07,-117.55],[34.07,-117.44],[34.063,-117.32],[34.06,-117.18],[34.025,-117.05],[33.93,-116.97],[33.92,-116.87]]],
+  ["15",[[34.16,-117.47],[34.06,-117.52],[33.97,-117.555],[33.87,-117.53],[33.75,-117.43],[33.68,-117.35],[33.60,-117.25],[33.55,-117.205],[33.48,-117.14],[33.40,-117.12]]],
+  ["215",[[34.20,-117.38],[34.10,-117.30],[34.06,-117.32],[33.98,-117.335],[33.92,-117.275],[33.80,-117.235],[33.70,-117.20],[33.58,-117.195],[33.55,-117.18]]],
+  ["91",[[33.86,-117.80],[33.88,-117.57],[33.90,-117.48],[33.965,-117.37],[33.98,-117.335]]],
+  ["60",[[34.03,-117.78],[34.03,-117.60],[34.00,-117.45],[33.99,-117.36],[33.945,-117.28],[33.93,-117.10],[33.93,-116.98]]],
+  ["210",[[34.13,-117.70],[34.13,-117.45],[34.14,-117.30],[34.13,-117.20],[34.07,-117.18]]],
+  ["79",[[33.93,-116.98],[33.75,-116.99],[33.60,-117.08],[33.50,-117.12]]],
+  ["74",[[33.68,-117.33],[33.74,-117.23],[33.75,-116.97]]]
+];
+const BOUNDS={minLat:33.38,maxLat:34.24,minLng:-117.82,maxLng:-116.84};
+const KX=Math.cos(33.8*Math.PI/180)*1000, KY=1000;
+const MAPW=(BOUNDS.maxLng-BOUNDS.minLng)*KX, MAPH=(BOUNDS.maxLat-BOUNDS.minLat)*KY;
+const proj=(lat,lng)=>[(lng-BOUNDS.minLng)*KX,(BOUNDS.maxLat-lat)*KY];
+const unproj=(x,y)=>[BOUNDS.maxLat-y/KY, x/KX+BOUNDS.minLng];
+
+const JOB_TYPES=["Bathroom remodel","Kitchen remodel","Painting","Concrete / Asphalt","Electrical","Plumbing","Water damage / Insurance","Flooring","New construction / ADU","Other"];
+const SKILLS=["Plumbing","Electrical","Tile","Drywall","Painting","Framing","Concrete","Asphalt","Cabinets","Countertops","Flooring","Roofing","HVAC","Demo","Glass / Shower doors","Stucco","General"];
+const PENDING_REASONS=["Waiting on city permit","Waiting on insurance decision","Waiting on client decision","Waiting on materials","Waiting on financing","Other"];
+const INSPECTION_TYPES=["Rough plumbing","Rough electrical","Framing","Shower pan / Waterproofing","Insulation","Drywall / Nail","Underground / Slab","Gas line","Final","Other"];
+const FILE_CATS=["Photo","Plan / Drawing","Contract","Permit","Invoice / Receipt","Other"];
+const OFFICE_CATS=["Completion form","Finance form","Inspection checklist","Stage checklist","Material list","Other"];
+
+const DEFAULT_TEMPLATES={
+ "Bathroom remodel":{
+  materials:["Floor tile","Wall / shower tile","Thinset mortar","Grout + grout sealer","Cement backer board / Durock","Waterproofing (RedGard / Kerdi)","Shower pan / mortar bed + liner","Shower drain","Shower valve + trim kit","Tub (if replacing) + drain/overflow","Toilet + wax ring + supply line","Vanity + top","Faucet + P-trap + supply lines","Mirror / medicine cabinet","Exhaust fan (vented outside)","GFCI outlets","Light fixtures","Moisture-resistant drywall","Primer + bathroom paint","Silicone caulk","Shower glass / door","Accessories (towel bar, TP holder, hooks)","Baseboard / trim"],
+  watch:["Permit pulled (if required) and posted on site","Water shut off; check for existing leaks / mold","Check subfloor for rot or soft spots","Plumbing rough-in matches plan (valve height, drain location)","Valve depth correct for trim kit","Blocking installed for vanity, grab bars, glass","Waterproofing flood test (24 h) before tile","Shower floor slopes to drain (1/4\" per ft)","Exhaust fan ducted outside, not into attic","GFCI on all bathroom receptacles","Tile layout + colors confirmed with client in writing","Lead times for vanity / glass / special-order tile"],
+  done:["Final inspection passed","Run water: no leaks at valve, drain, supply lines","Hot / cold correct on all fixtures","Toilet secure, no rocking, flushes properly","Caulk complete; grout sealed","Exhaust fan and lights working","GFCI tested","Vanity doors / drawers aligned","Shower glass sealed, door closes cleanly","Site cleaned, debris removed","Client walkthrough + punch list closed","Completion form signed","Before / after photos taken","Asked client for Google / Yelp review"]
+ },
+ "Kitchen remodel":{
+  materials:["Cabinets (base / wall / pantry)","Cabinet hardware","Countertops (template + install)","Backsplash tile + thinset + grout","Sink + faucet + disposal","Dishwasher supply + drain kit","Appliance connections (gas / water line for fridge)","Range hood + duct","Recessed / under-cabinet lighting","GFCI / AFCI outlets + dedicated circuits","Drywall + mud + tape","Primer + paint","Flooring + underlayment","Baseboard / trim","Silicone caulk"],
+  watch:["Permit pulled (electrical / plumbing changes)","Appliance specs + cutouts confirmed before cabinet order","Cabinet layout and measurements double-checked","Dedicated circuits for appliances (DW, disposal, micro, fridge)","Countertop GFCI spacing per code","Range hood vented outside","Gas line pressure test if moved","Countertop template only after cabinets are level and fixed","Lead times: cabinets, countertops, appliances","Protect floors and adjacent rooms during demo"],
+  done:["Final inspection passed","All appliances installed and tested","No leaks under sink / dishwasher","Disposal and dishwasher working","Cabinet doors / drawers aligned, soft-close working","Countertop seams and caulk clean","Lights + outlets working; GFCI tested","Site cleaned","Client walkthrough + punch list closed","Completion form signed","Before / after photos taken","Asked client for Google / Yelp review"]
+ },
+ "Painting":{
+  materials:["Paint (colors + sheen confirmed)","Primer","Caulk","Spackle / patch","Sandpaper","Painter's tape","Plastic + drop cloths","Rollers + covers, brushes"],
+  watch:["Colors and sheen signed off by client","Test for lead paint (pre-1978 homes)","Repair cracks / holes before priming","Move / cover furniture and floors","Weather check for exterior work"],
+  done:["Two coats, even coverage","Clean cut lines","Touch-ups done","Hardware / covers re-installed","Site cleaned","Client walkthrough","Completion form signed","Photos + review request"]
+ },
+ "Concrete / Asphalt":{
+  materials:["Concrete / asphalt (yards / tons)","Base gravel","Rebar / wire mesh","Forms + stakes","Expansion joint","Sealer","Compactor rental"],
+  watch:["Call 811 (DigAlert) before digging","Permit / city approval if in right of way","Grade and drainage away from structure","Base compaction checked","Weather (no rain, temp) for pour","Inspection before pour (if required)"],
+  done:["Finish and slope correct, no ponding","Control joints cut","Forms removed, edges backfilled","Cure / keep-off time explained to client","Site cleaned","Completion form signed","Photos + review request"]
+ },
+ "Electrical":{
+  materials:["Wire (gauge per circuit)","Breakers","Boxes + covers","Outlets / switches (GFCI / AFCI)","Fixtures","Conduit + fittings","Panel (if upgrading)"],
+  watch:["Permit pulled","Load calc for new circuits / panel upgrade","Utility coordination for panel swap","AFCI / GFCI requirements","Rough inspection before drywall"],
+  done:["Final inspection passed","All circuits labeled in panel","All devices tested","Covers installed","Site cleaned","Completion form signed","Photos + review request"]
+ },
+ "Plumbing":{
+  materials:["Pipe (PEX / copper / ABS)","Fittings","Shut-off valves","Water heater (if replacing)","Fixtures","Supply lines","Pipe insulation"],
+  watch:["Permit pulled","Water shut off and drained","Pressure test before closing walls","Water heater venting / strapping / expansion tank","Slope on drain lines"],
+  done:["Final inspection passed","No leaks after full run","Pressure and hot water confirmed","Access panels installed","Site cleaned","Completion form signed","Photos + review request"]
+ },
+ "Water damage / Insurance":{
+  materials:["Drying equipment (fans / dehumidifiers)","Moisture meter readings log","Antimicrobial","Replacement drywall / insulation","Replacement flooring","Baseboard / trim","Paint"],
+  watch:["Claim number + adjuster contact saved","Photos of all damage BEFORE demo","Moisture readings logged daily","Scope approved by insurance before rebuild","Find and fix leak source first","Check for mold behind walls","Supplement filed for hidden damage"],
+  done:["Final moisture readings normal","Rebuild matches pre-loss condition","Insurance paperwork complete","Client walkthrough","Completion form signed","Photos + review request"]
+ },
+ "Flooring":{
+  materials:["Flooring (+10% waste)","Underlayment / moisture barrier","Transitions / thresholds","Baseboard / quarter round","Leveling compound","Adhesive (if glue-down)"],
+  watch:["Acclimate material (if wood / LVP)","Subfloor flat and dry","Moisture test on slab","Door clearances / undercut","Layout direction confirmed with client"],
+  done:["No gaps, squeaks or lippage","Transitions secure","Trim installed and caulked","Site cleaned","Completion form signed","Photos + review request"]
+ },
+ "New construction / ADU":{
+  materials:["Plans + engineering","Foundation materials","Framing lumber","Roofing","Windows / doors","MEP rough materials","Insulation","Drywall","Finishes"],
+  watch:["Plans approved, permit issued","Utility / sewer connections planned","Inspection sequence on schedule","Title 24 energy compliance","Lead times on windows / doors"],
+  done:["Final inspection + certificate of occupancy","All systems tested","Punch list closed","Completion form signed","Photos + review request"]
+ },
+ "Other":{materials:[],watch:["Permit needed?","Scope confirmed with client in writing"],done:["Client walkthrough","Completion form signed","Photos + review request"]}
+};
+
+/* ============ state ============ */
+const S={projects:[],contractors:[],teams:[],office:[],settings:{},loaded:{}};
+const UI={tab:"projects",pfilter:"active",psearch:"",ctab:"people",csearch:"",osearch:"",ocat:"All",mapSel:null,mapEdit:false,route:{},mapView:null};
+let DB=null, ASSETS=null, DL=null, MODE="local", sheet=null;
+const COLS=["projects","contractors","teams","office"];
+
+/* ============ utils ============ */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const now=()=>new Date().toISOString();
+const fmtDate=s=>{if(!s)return"";const d=new Date(s.length===10?s+"T12:00":s);return isNaN(d)?s:d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})};
+const fmtDT=s=>{const d=new Date(s);return isNaN(d)?"":d.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})};
+const digits=p=>String(p||"").replace(/\D/g,"");
+const fmtPhone=p=>{const d=digits(p);if(d.length===10)return`(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;if(d.length===11&&d[0]==="1")return`+1 (${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`;return p||""};
+const waNum=p=>{let d=digits(p);if(d.length===10)d="1"+d;return d};
+const waLink=(p,text)=>`https://wa.me/${waNum(p)}${text?`?text=${encodeURIComponent(text)}`:""}`;
+const waShare=text=>`https://wa.me/?text=${encodeURIComponent(text)}`;
+const gmaps=a=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}`;
+const amaps=a=>`https://maps.apple.com/?q=${encodeURIComponent(a)}`;
+const fullAddr=p=>[p.address,p.city,"CA"].filter(Boolean).join(", ");
+const hash=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))|0;return h};
+const byId=(col,id)=>S[col].find(x=>x.id===id);
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+async function copy(text){try{await navigator.clipboard.writeText(text);toast("Copied")}catch(e){openDialog(`<h3>Copy this</h3><textarea style="min-height:140px" readonly>${esc(text)}</textarea><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" data-act="dlg-close">Close</button></div>`)}}
+function myName(){return (S.settings.myName||"").trim()}
+function templates(){const o=(S.settings.templates)||{};const out={};for(const t of JOB_TYPES){out[t]=o[t]||DEFAULT_TEMPLATES[t]||{materials:[],watch:[],done:[]}}return out}
+
+/* ============ device file storage (IndexedDB) ============ */
+const IDB={db:null,
+  open(){return new Promise((res,rej)=>{if(this.db)return res(this.db);const r=indexedDB.open("chc-crm-files",1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>{this.db=r.result;res(r.result)};r.onerror=()=>rej(r.error)})},
+  async tx(mode,fn){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction("files",mode);const st=t.objectStore("files");let out;const r=fn(st);if(r)r.onsuccess=()=>{out=r.result};t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error)})},
+  put(id,blob){return this.tx("readwrite",st=>st.put(blob,id))},
+  get(id){return this.tx("readonly",st=>st.get(id))},
+  del(id){return this.tx("readwrite",st=>st.delete(id))},
+  keys(){return this.tx("readonly",st=>st.getAllKeys())}
+};
+const localAssets={
+  async upload(f,opts){const id="local-"+uid();const blob=opts&&opts.type?new Blob([f],{type:opts.type}):f;await IDB.put(id,blob);return{id,sizeBytes:f.size,contentType:blob.type||f.type||"application/octet-stream"}},
+  async delete(id){await IDB.del(id);const u=URLS.get(id);if(u)URL.revokeObjectURL(u);URLS.delete(id);return{deleted:true}}
+};
+const URLS=new Map();
+function fileUrl(id){
+  if(MODE==="db")return "/_blob/"+id;
+  if(URLS.has(id))return URLS.get(id)||"#";
+  URLS.set(id,"");
+  IDB.get(id).then(b=>{if(b){URLS.set(id,URL.createObjectURL(b));render()}}).catch(()=>{});
+  return "#";
+}
+function hasIDB(){try{return !!window.indexedDB}catch(e){return false}}
+
+/* ============ storage ============ */
+const LSKEY="chc-crm-v1";
+function lsLoad(){try{const d=JSON.parse(localStorage.getItem(LSKEY)||"{}");for(const c of COLS)S[c]=d[c]||[];S.settings=d.settings||{}}catch(e){}}
+function lsSave(){try{localStorage.setItem(LSKEY,JSON.stringify({projects:S.projects,contractors:S.contractors,teams:S.teams,office:S.office,settings:S.settings}))}catch(e){}}
+const chains={};
+function serial(key,fn){const p=(chains[key]||Promise.resolve()).then(fn,fn);chains[key]=p.catch(()=>{});return p}
+function strip(o){const c={...o};delete c.id;return JSON.parse(JSON.stringify(c))}
+async function save(col,obj){
+  obj.updatedAt=now(); if(!obj.createdAt)obj.createdAt=obj.updatedAt;
+  if(!obj.id)obj.id=MODE==="db"?DB.collection(col).doc().id:uid();
+  const arr=S[col];const i=arr.findIndex(x=>x.id===obj.id);if(i>=0)arr[i]=obj;else arr.push(obj);
+  render();
+  if(MODE==="db"){
+    try{await serial(col+"/"+obj.id,()=>DB.collection(col).doc(obj.id).set(strip(obj)))}catch(e){handleWriteErr(e)}
+  }else lsSave();
+  return obj;
+}
+async function remove(col,id){
+  S[col]=S[col].filter(x=>x.id!==id);render();
+  if(MODE==="db"){try{await serial(col+"/"+id,()=>DB.collection(col).doc(id).delete())}catch(e){handleWriteErr(e)}}else lsSave();
+}
+async function saveSettings(patch){
+  S.settings={...S.settings,...patch};render();
+  if(MODE==="db"){try{await serial("settings",()=>DB.doc("settings/main").set(JSON.parse(JSON.stringify(S.settings))))}catch(e){handleWriteErr(e)}}else lsSave();
+}
+function handleWriteErr(e){
+  const c=e&&e.code;
+  if(c==="quota_exceeded")toast("Storage is full — delete some old records.");
+  else if(c==="invalid_argument")toast("You don't have permission to save here.");
+  else toast("Couldn't save — check your connection.");
+}
+function setSync(text,warn){const el=$("#sync");el.classList.toggle("warn",!!warn);el.querySelector("span").textContent=text}
+
+async function initStorage(){
+  lsLoad();
+  render();
+  if(!window.claude||typeof window.claude.use!=="function"){ASSETS=hasIDB()?localAssets:null;setSync("Saved on this device",true);render();return}
+  try{DB=await window.claude.use("db")}catch(e){DB=null}
+  try{ASSETS=await window.claude.use("assets")}catch(e){ASSETS=null}
+  if(!DB){ASSETS=hasIDB()?localAssets:null;setSync("Saved on this device",true);render();return}
+  MODE="db";
+  for(const c of COLS)S[c]=[];
+  S.settings={};
+  setSync("Loading…",true);
+  const timer=setTimeout(()=>setSync("Can't reach data yet",true),10000);
+  let pending=COLS.length+1;
+  const done=meta=>{if(meta&&meta.fromCache)return;pending--; if(pending<=0){clearTimeout(timer);setSync("Synced")}};
+  const seen={};
+  for(const c of COLS){
+    DB.collection(c).onSnapshot(snap=>{
+      S[c]=snap.docs.map(d=>({...d.data(),id:d.id}));S.loaded[c]=true;
+      if(!seen[c]&&!snap.metadata.fromCache){seen[c]=1;done(snap.metadata)}
+      render();
+    },err=>{clearTimeout(timer);setSync("Offline — changes may not save",true)});
+  }
+  DB.doc("settings/main").onSnapshot(snap=>{
+    S.settings=snap.exists?{...snap.data()}:{};
+    if(!seen.settings&&!snap.metadata.fromCache){seen.settings=1;done(snap.metadata)}
+    render();
+  },err=>{});
+  render();
+}
+
+/* ============ derived ============ */
+function teamOf(c){return c&&c.teamId?byId("teams",c.teamId):null}
+function membersOf(teamId){return S.contractors.filter(c=>c.teamId===teamId)}
+function projectsOfContractor(cid){return S.projects.filter(p=>(p.contractorIds||[]).includes(cid))}
+function projectsOfTeam(tid){const ids=membersOf(tid).map(c=>c.id);return S.projects.filter(p=>(p.contractorIds||[]).some(x=>ids.includes(x)))}
+function load(unit){ // unit: {type:'team'|'solo', id}
+  const ps=unit.type==="team"?projectsOfTeam(unit.id):projectsOfContractor(unit.id);
+  const active=ps.filter(p=>p.status==="active").length;
+  const pending=ps.filter(p=>p.status==="pending").length;
+  const limit=unit.type==="team"?Number((byId("teams",unit.id)||{}).jobLimit||0):Number((byId("contractors",unit.id)||{}).jobLimit||0);
+  return {active,pending,limit,over:limit>0&&active>limit,full:limit>0&&active>=limit};
+}
+function unitFor(c){return c.teamId&&byId("teams",c.teamId)?{type:"team",id:c.teamId}:{type:"solo",id:c.id}}
+function overloaded(){
+  const out=[];
+  for(const t of S.teams){const l=load({type:"team",id:t.id});if(l.over)out.push({name:t.name,...l})}
+  for(const c of S.contractors){if(c.teamId&&byId("teams",c.teamId))continue;const l=load({type:"solo",id:c.id});if(l.over)out.push({name:c.name,...l})}
+  return out;
+}
+function checkProgress(p){
+  const T=templates()[p.jobType]||{done:[]};
+  const items=[...(T.done||[]),...((p.extra&&p.extra.done)||[])];
+  const ch=(p.checks&&p.checks.done)||{};
+  const n=items.filter(i=>ch[i]).length;
+  return {n,total:items.length};
+}
+function coordsOf(p){
+  if(typeof p.lat==="number"&&typeof p.lng==="number")return [p.lat,p.lng,true];
+  const c=CITIES[p.city];if(!c)return null;
+  const h=hash(p.id||p.address);const a=(h%360)*Math.PI/180;const r=0.006+((Math.abs(h)>>8)%10)*0.0012;
+  return [c[0]+Math.sin(a)*r,c[1]+Math.cos(a)*r*1.2,false];
+}
+const salespeople=()=>[...new Set(S.projects.map(p=>p.salesperson).filter(Boolean))].sort();
+
+/* ============ render ============ */
+function render(){
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===UI.tab));
+  const m=$("#main");
+  const ae=document.activeElement;const keep=ae&&ae.id&&m.contains(ae)?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
+  if(UI.tab==="projects")m.innerHTML=viewProjects();
+  else if(UI.tab==="contractors")m.innerHTML=viewContractors();
+  else if(UI.tab==="map"){ if(!$("#mapsvg"))m.innerHTML=viewMap(); else refreshMap(); }
+  else if(UI.tab==="office")m.innerHTML=viewOffice();
+  if(UI.tab==="map")bindMap();
+  if(keep){const el=document.getElementById(keep.id);if(el){el.focus();try{el.setSelectionRange(keep.s,keep.e)}catch(e){}}}
+  if(sheet&&sheet.refresh)sheet.refresh();
+}
+
+/* ---------- Projects ---------- */
+function viewProjects(){
+  const P=S.projects;
+  const cnt={active:0,pending:0,completed:0};P.forEach(p=>cnt[p.status]=(cnt[p.status]||0)+1);
+  const q=UI.psearch.toLowerCase();
+  let list=P.filter(p=>UI.pfilter==="all"||p.status===UI.pfilter)
+    .filter(p=>!q||[p.address,p.city,p.clientName,p.salesperson,p.jobType,p.clientPhone].join(" ").toLowerCase().includes(q))
+    .sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
+  const ov=overloaded();
+  const upcoming=[];P.filter(p=>p.status!=="completed").forEach(p=>(p.inspections||[]).forEach(i=>{if(i.result==="Scheduled"&&i.date&&i.date>=new Date().toISOString().slice(0,10))upcoming.push({p,i})}));
+  upcoming.sort((a,b)=>a.i.date.localeCompare(b.i.date));
+  return `
+  <div class="row"><h2>Projects</h2><div class="spacer"></div>
+    <button class="btn" data-act="tile-calc">Tile calculator</button>
+    <button class="btn primary" data-act="project-new">+ New project</button></div>
+  <div class="stats">
+    <div class="stat"><b>${cnt.active||0}</b><span>Active</span></div>
+    <div class="stat"><b style="color:var(--amber)">${cnt.pending||0}</b><span>Pending (yellow)</span></div>
+    <div class="stat"><b>${cnt.completed||0}</b><span>Completed</span></div>
+    <div class="stat"><b>${upcoming.length}</b><span>Upcoming inspections</span></div>
+  </div>
+  ${ov.length?`<div class="warnbox"><b>Over job limit:</b> ${ov.map(o=>`${esc(o.name)} (${o.active}/${o.limit})`).join(", ")}</div>`:""}
+  ${upcoming.length?`<div class="panel" style="margin-bottom:12px"><h3>Upcoming inspections</h3><div class="list">${upcoming.slice(0,5).map(({p,i})=>`
+    <div class="li" data-act="project-open" data-id="${p.id}" style="cursor:pointer"><span class="tag sched">${esc(fmtDate(i.date))}${i.time?" · "+esc(i.time):""}</span><div class="grow"><div class="t">${esc(p.address)}</div><div class="s">${esc(i.type)}${p.city?" · "+esc(p.city):""}</div></div></div>`).join("")}</div></div>`:""}
+  <div class="row" style="margin-bottom:10px">
+    <div class="chips">
+      ${[["active","Active"],["pending","Pending"],["completed","Completed"],["all","All"]].map(([k,l])=>`<button class="chip ${UI.pfilter===k?"on":""}" data-act="pfilter" data-v="${k}">${l}<span class="n">${k==="all"?P.length:(cnt[k]||0)}</span></button>`).join("")}
+    </div>
+    <div class="spacer"></div>
+    <input type="search" id="psearch" placeholder="Search address, client, salesperson…" value="${esc(UI.psearch)}" style="max-width:300px">
+  </div>
+  ${list.length?`<div class="cards">${list.map(projectCard).join("")}</div>`:
+    `<div class="empty">${P.length?"No projects match.":"No projects yet. Tap <b>+ New project</b> to add your first job — the address becomes its name."}</div>`}`;
+}
+function projectCard(p){
+  const cs=(p.contractorIds||[]).map(id=>byId("contractors",id)).filter(Boolean);
+  const pr=checkProgress(p);
+  const lastInsp=(p.inspections||[]).slice(-1)[0];
+  return `<div class="card ${p.status}" data-act="project-open" data-id="${p.id}">
+    <div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="addr" style="flex:1">${esc(p.address||"(no address)")}</div><span class="tag ${p.status}">${statusLabel(p.status)}</span></div>
+    <div class="meta">${esc([p.city,p.jobType].filter(Boolean).join(" · "))}</div>
+    <div class="meta">Client: ${esc(p.clientName||"—")}${p.salesperson?` · Sales: ${esc(p.salesperson)}`:""}</div>
+    ${p.status==="pending"&&p.pendingReason?`<div class="meta" style="color:var(--amber);font-weight:600">${esc(p.pendingReason)}</div>`:""}
+    ${cs.length?`<div class="meta">Crew: ${cs.map(c=>esc(c.name)).join(", ")}</div>`:""}
+    ${lastInsp?`<div class="meta">Last inspection: ${esc(lastInsp.type)} — <span class="tag ${inspCls(lastInsp.result)}">${esc(lastInsp.result)}</span></div>`:""}
+    ${pr.total?`<div class="bar"><i style="width:${Math.round(pr.n/pr.total*100)}%"></i></div><div class="meta" style="font-size:11px">Completion checklist ${pr.n}/${pr.total}</div>`:""}
+  </div>`;
+}
+const statusLabel=s=>({active:"Active",pending:"Pending",completed:"Completed"}[s]||s);
+const inspCls=r=>({Pass:"pass",Fail:"fail",Partial:"pending",Scheduled:"sched"}[r]||"");
+
+function projectForm(p){
+  p=p||{status:"active",features:{inspections:true,files:true,plans:false},contractorIds:[]};
+  const isNew=!p.id;
+  const cs=[...S.contractors].sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  openSheet({
+    title:isNew?"New project":"Edit project",
+    body:()=>`
+    <form id="pform" autocomplete="off">
+      <label class="f">Address (project name) *</label><input type="text" name="address" required value="${esc(p.address)}" placeholder="1234 Main St">
+      <div class="grid2">
+        <div><label class="f">City</label><input type="text" name="city" list="citylist" value="${esc(p.city)}" placeholder="Riverside">
+          <datalist id="citylist">${Object.keys(CITIES).map(c=>`<option value="${esc(c)}">`).join("")}</datalist></div>
+        <div><label class="f">Job type</label><select name="jobType">${JOB_TYPES.map(t=>`<option ${p.jobType===t?"selected":""}>${esc(t)}</option>`).join("")}</select></div>
+        <div><label class="f">Client name</label><input type="text" name="clientName" value="${esc(p.clientName)}"></div>
+        <div><label class="f">Client phone</label><input type="tel" name="clientPhone" value="${esc(p.clientPhone)}" placeholder="(951) 555-0123"></div>
+        <div><label class="f">Salesperson</label><input type="text" name="salesperson" list="splist" value="${esc(p.salesperson)}"><datalist id="splist">${salespeople().map(s=>`<option value="${esc(s)}">`).join("")}</datalist></div>
+        <div><label class="f">Start date</label><input type="date" name="startDate" value="${esc(p.startDate)}"></div>
+        <div><label class="f">Status</label><select name="status" id="pstatus">
+          <option value="active" ${p.status==="active"?"selected":""}>Active</option>
+          <option value="pending" ${p.status==="pending"?"selected":""}>Pending (yellow)</option>
+          <option value="completed" ${p.status==="completed"?"selected":""}>Completed</option></select></div>
+        <div id="preasonwrap" class="${p.status==="pending"?"":"hidden"}"><label class="f">Waiting on</label><select name="pendingReason">${PENDING_REASONS.map(r=>`<option ${p.pendingReason===r?"selected":""}>${esc(r)}</option>`).join("")}</select></div>
+      </div>
+      <label class="f">Contractors</label>
+      ${cs.length?`<div class="pickl">${cs.map(c=>{const u=unitFor(c);const l=load(u);const sel=(p.contractorIds||[]).includes(c.id);const t=teamOf(c);
+        return `<label><input type="checkbox" name="cids" value="${c.id}" ${sel?"checked":""}><span style="flex:1">${esc(c.name)}${t?` <span class="sub">· ${esc(t.name)}</span>`:""}<br><span class="sub">${(c.skills||[]).slice(0,4).map(esc).join(", ")}</span></span>
+        <span class="tag ${l.over?"fail":l.full?"pending":""}">${l.active}${l.limit?"/"+l.limit:""} active</span></label>`}).join("")}</div>`
+        :`<div class="sub">No contractors yet — add them in the Contractors tab.</div>`}
+      <label class="f">Tracking</label>
+      <div class="panel" style="padding:4px 12px">
+        ${[["inspections","Inspections"],["files","Files & photos"],["plans","Engineering plans"]].map(([k,l])=>`
+        <div class="toggle"><span>${l}</span><label class="sw"><input type="checkbox" name="f_${k}" ${(p.features||{})[k]?"checked":""}><span></span></label></div>`).join("")}
+      </div>
+      <label class="f">Notes</label><textarea name="notes" placeholder="Scope, gate code, pets, parking…">${esc(p.notes)}</textarea>
+    </form>`,
+    foot:`${!isNew?`<button class="btn danger" data-act="project-del" data-id="${p.id}" style="margin-right:auto">Delete</button>`:""}<button class="btn" data-act="sheet-close">Cancel</button><button class="btn primary" data-act="project-save">Save</button>`,
+    after(){
+      $("#pstatus").addEventListener("change",e=>$("#preasonwrap").classList.toggle("hidden",e.target.value!=="pending"));
+    },
+    onAct:{ "project-save":async()=>{
+      const f=$("#pform");if(!f.reportValidity())return;
+      const fd=new FormData(f);
+      const o={...p};
+      for(const k of ["address","city","jobType","clientName","clientPhone","salesperson","startDate","status","pendingReason","notes"])o[k]=(fd.get(k)||"").toString().trim();
+      if(o.status!=="pending")o.pendingReason="";
+      o.contractorIds=fd.getAll("cids");
+      o.features={inspections:!!fd.get("f_inspections"),files:!!fd.get("f_files"),plans:!!fd.get("f_plans")};
+      if(p.city!==o.city){delete o.lat;delete o.lng}
+      if(isNew){o.log=[{t:now(),text:"Project created"}]}
+      else if(p.status!==o.status){o.log=[...(o.log||[]),{t:now(),text:`Status → ${statusLabel(o.status)}${o.pendingReason?" ("+o.pendingReason+")":""}`}]}
+      if(o.status==="completed"&&!o.completedAt)o.completedAt=now();
+      const over=o.status==="active"?o.contractorIds.map(id=>byId("contractors",id)).filter(Boolean).map(c=>({c,l:load(unitFor(c))})).filter(x=>x.l.limit&&x.l.active+((p.contractorIds||[]).includes(x.c.id)&&p.status==="active"?0:1)>x.l.limit):[];
+      const saved=await save("projects",o);
+      if(over.length)toast(`Heads up: ${over.map(x=>x.c.name).join(", ")} over job limit`);
+      openProject(saved.id);
+    }}
+  });
+}
+
+function openProject(id){
+  let tab="watch";
+  openSheet({
+    title:()=>{const p=byId("projects",id);return p?esc(p.address):""},
+    body:()=>{
+      const p=byId("projects",id);if(!p)return`<div class="empty">This project was deleted.</div>`;
+      const T=templates()[p.jobType]||{materials:[],watch:[],done:[]};
+      const cs=(p.contractorIds||[]).map(i=>byId("contractors",i)).filter(Boolean);
+      const F=p.features||{};
+      const addr=fullAddr(p);
+      const me=myName();
+      const clientMsg=`Hi ${p.clientName||""}, this is ${me||"your project manager"} from ${S.settings.company||"California Home Center"} with an update on your project at ${p.address}: `;
+      const checkTabs=[["watch","Watch-outs"],["materials","Materials"],["done","Completion"]];
+      const items=[...(T[tab]||[]),...((p.extra&&p.extra[tab])||[])];
+      const ch=(p.checks&&p.checks[tab])||{};
+      const nDone=items.filter(i=>ch[i]).length;
+      const files=(p.files||[]);
+      return `
+      <div class="row"><span class="tag ${p.status}">${statusLabel(p.status)}</span>${p.status==="pending"&&p.pendingReason?`<span class="sub" style="color:var(--amber);font-weight:600">${esc(p.pendingReason)}</span>`:""}<div class="spacer"></div>
+        <select id="qstatus" style="width:auto;padding:6px 8px"><option value="">Change status…</option><option value="active">Active</option>${PENDING_REASONS.map(r=>`<option value="pending|${esc(r)}">Pending — ${esc(r)}</option>`).join("")}<option value="completed">Completed</option></select></div>
+      <div class="panel">
+        <dl class="kv">
+          <dt>Address</dt><dd>${esc(addr)}<div class="pill-btns" style="margin-top:6px"><a class="btn sm" href="${gmaps(addr)}" target="_blank" rel="noopener">Google Maps</a><a class="btn sm" href="${amaps(addr)}" target="_blank" rel="noopener">Apple Maps</a><button class="btn sm" data-act="copy" data-text="${esc(addr)}">Copy</button></div></dd>
+          <dt>Client</dt><dd>${esc(p.clientName||"—")}${p.clientPhone?`<div class="mono" style="margin-top:2px">${esc(fmtPhone(p.clientPhone))}</div>
+            <div class="pill-btns" style="margin-top:6px"><a class="btn sm" href="tel:${digits(p.clientPhone)}">Call</a><a class="btn sm wa" href="${waLink(p.clientPhone,clientMsg)}" target="_blank" rel="noopener">WhatsApp update</a><button class="btn sm" data-act="copy-contact" data-name="${esc(p.clientName)}" data-phone="${esc(p.clientPhone)}" data-note="${esc(addr)}">Copy contact</button></div>`:""}</dd>
+          <dt>Job type</dt><dd>${esc(p.jobType||"—")}</dd>
+          <dt>Salesperson</dt><dd>${esc(p.salesperson||"—")}</dd>
+          ${p.startDate?`<dt>Start</dt><dd>${esc(fmtDate(p.startDate))}</dd>`:""}
+          <dt>Crew</dt><dd>${cs.length?cs.map(c=>{const l=load(unitFor(c));return `<a href="#" data-act="contractor-open" data-id="${c.id}">${esc(c.name)}</a>${l.over?` <span class="tag fail">over limit</span>`:""}`}).join(", "):"—"}</dd>
+        </dl>
+        ${p.notes?`<div style="margin-top:10px;white-space:pre-wrap;font-size:14px;background:var(--bg);border-radius:8px;padding:8px 10px">${esc(p.notes)}</div>`:""}
+      </div>
+
+      <div class="panel">
+        <div class="row" style="margin-bottom:8px"><div class="seg">${checkTabs.map(([k,l])=>`<button data-act="ctab" data-v="${k}" class="${tab===k?"on":""}">${l}</button>`).join("")}</div><div class="spacer"></div><span class="sub mono">${nDone}/${items.length}</span></div>
+        ${items.length?`<div class="checks">${items.map(i=>{const custom=((p.extra&&p.extra[tab])||[]).includes(i);return `<label class="${ch[i]?"done":""}"><input type="checkbox" data-act="check" data-item="${esc(i)}" ${ch[i]?"checked":""}><span>${esc(i)}</span>${custom?`<button class="x" data-act="check-rm" data-item="${esc(i)}" title="Remove">×</button>`:""}</label>`}).join("")}</div>`:`<div class="sub">No items for this job type yet.</div>`}
+        <div class="row" style="margin-top:8px;flex-wrap:nowrap"><input type="text" id="newcheck" placeholder="Add item for this job…"><button class="btn sm" data-act="check-add">Add</button></div>
+        ${tab==="materials"?`<div class="row" style="margin-top:8px"><button class="btn sm" data-act="tile-calc" data-pid="${p.id}">Tile calculator</button><button class="btn sm" data-act="copy-materials">Copy list</button></div>`:""}
+      </div>
+
+      ${F.inspections?`<div class="panel">
+        <div class="row" style="margin-bottom:8px"><h3 style="margin:0">Inspections</h3><div class="spacer"></div><button class="btn sm" data-act="insp-new">+ Add</button></div>
+        ${(p.inspections||[]).length?`<div class="list">${[...(p.inspections||[])].map((x,i)=>({x,i})).reverse().map(({x,i})=>`
+          <div class="li"><div class="grow"><div class="t">${esc(x.type)} <span class="tag ${inspCls(x.result)}">${esc(x.result)}</span></div>
+          <div class="s">${esc(fmtDate(x.date))}${x.time?" · "+esc(x.time):""}${x.inspector?" · "+esc(x.inspector):""}</div>${x.notes?`<div class="s" style="white-space:pre-wrap;color:var(--ink);margin-top:3px">${esc(x.notes)}</div>`:""}</div>
+          <div class="row" style="flex-direction:column;gap:4px"><button class="btn sm" data-act="insp-edit" data-i="${i}">Edit</button><a class="btn sm wa" href="${waShare(`Inspection — ${p.address}\n${x.type}: ${x.result}${x.date?" ("+fmtDate(x.date)+")":""}${x.notes?"\n"+x.notes:""}`)}" target="_blank" rel="noopener">Share</a></div></div>`).join("")}</div>`:`<div class="sub">No inspections logged.</div>`}
+      </div>`:""}
+
+      ${(F.files||F.plans)?`<div class="panel">
+        <div class="row" style="margin-bottom:8px"><h3 style="margin:0">Files${F.plans?" & plans":""}</h3><div class="spacer"></div>
+          ${ASSETS?`<label class="btn sm">Upload<input type="file" id="pfile" multiple ${MODE==="db"?'accept="image/*,application/pdf,video/mp4,video/webm,text/plain,text/csv"':""} class="hidden"></label>`:""}</div>
+        ${ASSETS?`<select id="pfilecat" style="margin-bottom:8px">${FILE_CATS.map(c=>`<option ${c==="Plan / Drawing"&&!F.files?"selected":""}>${c}</option>`).join("")}</select>`:`<div class="sub">${MODE==="db"?"Uploading needs edit access to this app.":"File uploads aren't available in this browser."}</div>`}
+        ${files.length?`<div class="list">${files.map((f,i)=>fileRow(f,i,"pf")).join("")}</div>`:`<div class="sub">No files yet. Photos, PDFs (plans, permits, contracts) are supported.</div>`}
+      </div>`:""}
+
+      <div class="panel">
+        <h3>Log</h3>
+        <div class="row" style="flex-wrap:nowrap;align-items:flex-start"><textarea id="lognote" placeholder="What happened? Call with client, fix needed, material pickup…" style="min-height:52px"></textarea><button class="btn sm primary" data-act="log-add">Add</button></div>
+        <div class="log">${[...(p.log||[])].reverse().map(e=>`<div class="e"><small>${esc(fmtDT(e.t))}</small><span style="white-space:pre-wrap">${esc(e.text)}</span></div>`).join("")}</div>
+      </div>`;
+    },
+    foot:`<button class="btn" data-act="sheet-close">Close</button><button class="btn primary" data-act="project-edit" data-id="${id}">Edit</button>`,
+    after(){
+      const q=$("#qstatus");if(q)q.onchange=()=>{const v=q.value;if(!v)return;const p=byId("projects",id);const [s,r]=v.split("|");const o={...p,status:s,pendingReason:r||""};if(s==="completed"&&!o.completedAt)o.completedAt=now();o.log=[...(p.log||[]),{t:now(),text:`Status → ${statusLabel(s)}${r?" ("+r+")":""}`}];save("projects",o)};
+      const fi=$("#pfile");if(fi)fi.onchange=async()=>{const p=byId("projects",id);const cat=$("#pfilecat").value;const up=await uploadFiles(fi.files,cat);if(up.length){const cur=byId("projects",id);save("projects",{...cur,files:[...(cur.files||[]),...up],log:[...(cur.log||[]),{t:now(),text:`Uploaded ${up.length} file(s): ${up.map(u=>u.name).join(", ")}`}]})}};
+    },
+    onAct:{
+      ctab:(el)=>{tab=el.dataset.v;sheet.refresh()},
+      check:(el)=>{const p=byId("projects",id);const checks=JSON.parse(JSON.stringify(p.checks||{}));checks[tab]=checks[tab]||{};if(el.checked)checks[tab][el.dataset.item]=true;else delete checks[tab][el.dataset.item];save("projects",{...p,checks})},
+      "check-add":()=>{const v=$("#newcheck").value.trim();if(!v)return;const p=byId("projects",id);const extra=JSON.parse(JSON.stringify(p.extra||{}));extra[tab]=[...(extra[tab]||[]),v];save("projects",{...p,extra})},
+      "check-rm":(el,ev)=>{ev.preventDefault();const p=byId("projects",id);const extra=JSON.parse(JSON.stringify(p.extra||{}));extra[tab]=(extra[tab]||[]).filter(x=>x!==el.dataset.item);save("projects",{...p,extra})},
+      "copy-materials":()=>{const p=byId("projects",id);const T=templates()[p.jobType]||{};const items=[...(T.materials||[]),...((p.extra&&p.extra.materials)||[])];const ch=(p.checks&&p.checks.materials)||{};copy(`Materials — ${p.address}\n`+items.map(i=>`${ch[i]?"✅":"⬜️"} ${i}`).join("\n"))},
+      "insp-new":()=>inspectionForm(id,null),
+      "insp-edit":(el)=>inspectionForm(id,Number(el.dataset.i)),
+      "log-add":()=>{const v=$("#lognote").value.trim();if(!v)return;const p=byId("projects",id);save("projects",{...p,log:[...(p.log||[]),{t:now(),text:v}]})},
+      "pf-del":(el)=>confirmDlg("Remove this file from the project?",async()=>{const p=byId("projects",id);const f=(p.files||[])[Number(el.dataset.i)];if(!f)return;await save("projects",{...p,files:p.files.filter((_,i)=>i!==Number(el.dataset.i))});if(ASSETS&&f.assetId){try{await ASSETS.delete(f.assetId)}catch(e){}}}),
+    }
+  });
+}
+
+function inspectionForm(pid,idx){
+  const p=byId("projects",pid);const x=idx==null?{type:"Final",result:"Scheduled",date:new Date().toISOString().slice(0,10)}:p.inspections[idx];
+  openDialog(`<h3>${idx==null?"Add inspection":"Edit inspection"}</h3>
+   <form id="iform">
+   <label class="f">Type</label><select name="type">${INSPECTION_TYPES.map(t=>`<option ${x.type===t?"selected":""}>${t}</option>`).join("")}</select>
+   <div class="grid2"><div><label class="f">Date</label><input type="date" name="date" value="${esc(x.date)}"></div><div><label class="f">Time window</label><input type="text" name="time" value="${esc(x.time)}" placeholder="8–12"></div></div>
+   <label class="f">Result</label><select name="result">${["Scheduled","Pass","Partial","Fail"].map(t=>`<option ${x.result===t?"selected":""}>${t}</option>`).join("")}</select>
+   <label class="f">Inspector</label><input type="text" name="inspector" value="${esc(x.inspector)}">
+   <label class="f">Notes / corrections</label><textarea name="notes" placeholder="What needs to be fixed?">${esc(x.notes)}</textarea>
+   </form>
+   <div class="row" style="margin-top:12px;justify-content:flex-end">${idx!=null?`<button class="btn danger" data-act="insp-del" style="margin-right:auto">Delete</button>`:""}<button class="btn" data-act="dlg-close">Cancel</button><button class="btn primary" data-act="insp-save">Save</button></div>`,
+   {"insp-save":()=>{const fd=new FormData($("#iform"));const o={};for(const k of ["type","date","time","result","inspector","notes"])o[k]=(fd.get(k)||"").toString().trim();const cur=byId("projects",pid);const arr=[...(cur.inspections||[])];if(idx==null)arr.push(o);else arr[idx]=o;
+      const log=[...(cur.log||[]),{t:now(),text:`Inspection: ${o.type} — ${o.result}${o.notes?"\n"+o.notes:""}`}];
+      save("projects",{...cur,inspections:arr,log});closeDialog()},
+    "insp-del":()=>{const cur=byId("projects",pid);save("projects",{...cur,inspections:(cur.inspections||[]).filter((_,i)=>i!==idx)});closeDialog()}});
+}
+
+/* ---------- files ---------- */
+const TEXT_TYPES={csv:"text/csv",txt:"text/plain",md:"text/markdown",json:"application/json"};
+async function uploadFiles(fileList,cat){
+  if(!ASSETS){toast("Uploads aren't available here");return[]}
+  const out=[];
+  for(const f of fileList){
+    const ext=(f.name.split(".").pop()||"").toLowerCase();
+    const opts={};if(TEXT_TYPES[ext])opts.type=TEXT_TYPES[ext];else if(!f.type&&ext==="pdf")opts.type="application/pdf";
+    toast(`Uploading ${f.name}…`);
+    try{const r=await ASSETS.upload(f,opts);out.push({assetId:r.id,name:f.name,size:r.sizeBytes,type:r.contentType,cat,at:now()})}
+    catch(e){const c=e&&e.code;toast(c==="unsupported_type"?`${f.name}: use PDF, image, video or text (export Word files as PDF)`:c==="too_large"?`${f.name} is over 20 MB`:c==="quota_or_state"?"Storage full":`Couldn't upload ${f.name}`)}
+  }
+  return out;
+}
+function fileRow(f,i,prefix){
+  const url=fileUrl(f.assetId);const img=(f.type||"").startsWith("image/");
+  const ext=(f.name.split(".").pop()||"").toUpperCase().slice(0,4);
+  return `<div class="li">${img?`<img class="thumb" src="${esc(url)}" alt="">`:`<div class="thumb">${esc(ext)}</div>`}
+   <div class="grow"><div class="t">${esc(f.name)}</div><div class="s">${esc(f.cat||"")}${f.size?` · ${(f.size/1024/1024).toFixed(1)} MB`:""}</div></div>
+   <a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">Open</a>
+   ${ASSETS?`<button class="btn sm ghost" data-act="${prefix}-del" data-i="${i}" title="Remove">✕</button>`:""}</div>`;
+}
+
+/* ---------- Contractors ---------- */
+function viewContractors(){
+  const q=UI.csearch.toLowerCase();
+  const people=[...S.contractors].filter(c=>!q||[c.name,c.phone,c.license,(c.skills||[]).join(" "),(teamOf(c)||{}).name].join(" ").toLowerCase().includes(q)).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  const teams=[...S.teams].sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  return `
+  <div class="row"><h2>Contractors</h2><div class="spacer"></div>
+    <button class="btn" data-act="team-new">+ Team</button><button class="btn primary" data-act="contractor-new">+ Contractor</button></div>
+  <div class="row" style="margin:12px 0 10px"><div class="seg"><button class="${UI.ctab==="people"?"on":""}" data-act="cview" data-v="people">People (${S.contractors.length})</button><button class="${UI.ctab==="teams"?"on":""}" data-act="cview" data-v="teams">Teams (${S.teams.length})</button></div>
+    <div class="spacer"></div>${UI.ctab==="people"?`<input type="search" id="csearch" placeholder="Search name, skill, team…" value="${esc(UI.csearch)}" style="max-width:280px">`:""}</div>
+  ${UI.ctab==="people"?(people.length?`<div class="cards">${people.map(c=>{const t=teamOf(c);const l=load(unitFor(c));return `
+    <div class="card" data-act="contractor-open" data-id="${c.id}">
+      <div class="row"><div class="addr" style="flex:1">${esc(c.name)}</div>${t?`<span class="tag">${esc(t.name)}</span>`:""}</div>
+      <div class="meta mono">${esc(fmtPhone(c.phone))}${c.license?` · Lic# ${esc(c.license)}`:""}</div>
+      <div class="chips" style="margin-top:6px">${(c.skills||[]).map(s=>`<span class="tag skill">${esc(s)}</span>`).join("")}</div>
+      ${loadBar(l,t?"Team load":"Load")}
+    </div>`}).join("")}</div>`:`<div class="empty">${S.contractors.length?"No contractors match.":"No contractors yet. Add your crews and group them into teams."}</div>`)
+  :(teams.length?`<div class="cards">${teams.map(t=>{const m=membersOf(t.id);const l=load({type:"team",id:t.id});return `
+    <div class="card" data-act="team-open" data-id="${t.id}">
+      <div class="addr">${esc(t.name)}</div>
+      <div class="meta">${m.length?m.map(x=>esc(x.name)).join(", "):"No members"}</div>
+      <div class="chips" style="margin-top:6px">${[...new Set(m.flatMap(x=>x.skills||[]))].map(s=>`<span class="tag skill">${esc(s)}</span>`).join("")}</div>
+      ${loadBar(l,"Team load")}
+    </div>`}).join("")}</div>`:`<div class="empty">No teams yet. Contractors who work together can share one job limit as a team.</div>`)}`;
+}
+function loadBar(l,label){
+  const pct=l.limit?Math.min(100,Math.round(l.active/l.limit*100)):0;
+  return `<div class="meta" style="margin-top:8px">${label}: <b class="mono" style="color:${l.over?"var(--red)":"var(--ink)"}">${l.active}${l.limit?" / "+l.limit:""}</b> active${l.pending?` · ${l.pending} pending`:""}${l.over?` <span class="tag fail">Over limit</span>`:""}</div>
+   ${l.limit?`<div class="bar ${l.over?"over":""}"><i style="width:${pct}%"></i></div>`:""}`;
+}
+function contractorForm(c){
+  c=c||{skills:[]};const isNew=!c.id;
+  openSheet({title:isNew?"New contractor":"Edit contractor",
+    body:()=>`<form id="cform" autocomplete="off">
+      <label class="f">Name *</label><input type="text" name="name" required value="${esc(c.name)}">
+      <div class="grid2"><div><label class="f">Phone</label><input type="tel" name="phone" value="${esc(c.phone)}"></div>
+      <div><label class="f">License # (if any)</label><input type="text" name="license" value="${esc(c.license)}"></div></div>
+      <label class="f">Skills</label><div class="chips" id="skillchips">${[...new Set([...SKILLS,...(c.skills||[])])].map(s=>`<button type="button" class="chip ${(c.skills||[]).includes(s)?"on":""}" data-skill="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+      <div class="row" style="margin-top:6px;flex-wrap:nowrap"><input type="text" id="newskill" placeholder="Other skill…"><button type="button" class="btn sm" id="addskill">Add</button></div>
+      <div class="grid2"><div><label class="f">Team</label><select name="teamId"><option value="">— Works solo —</option>${S.teams.map(t=>`<option value="${t.id}" ${c.teamId===t.id?"selected":""}>${esc(t.name)}</option>`).join("")}</select></div>
+      <div><label class="f">Job limit (when solo)</label><input type="number" min="0" name="jobLimit" value="${esc(c.jobLimit||"")}" placeholder="e.g. 2"></div></div>
+      <label class="f">Notes</label><textarea name="notes" placeholder="Rates, reliability, languages, availability…">${esc(c.notes)}</textarea>
+    </form>`,
+    foot:`${!isNew?`<button class="btn danger" data-act="contractor-del" data-id="${c.id}" style="margin-right:auto">Delete</button>`:""}<button class="btn" data-act="sheet-close">Cancel</button><button class="btn primary" data-act="contractor-save">Save</button>`,
+    after(){
+      $("#skillchips").onclick=e=>{const b=e.target.closest("[data-skill]");if(b)b.classList.toggle("on")};
+      $("#addskill").onclick=()=>{const v=$("#newskill").value.trim();if(!v)return;const b=document.createElement("button");b.type="button";b.className="chip on";b.dataset.skill=v;b.textContent=v;$("#skillchips").appendChild(b);$("#newskill").value=""};
+    },
+    onAct:{"contractor-save":async()=>{const f=$("#cform");if(!f.reportValidity())return;const fd=new FormData(f);const o={...c};
+      for(const k of ["name","phone","license","teamId","notes"])o[k]=(fd.get(k)||"").toString().trim();
+      o.jobLimit=Number(fd.get("jobLimit"))||0;o.skills=[...document.querySelectorAll("#skillchips .chip.on")].map(b=>b.dataset.skill);
+      const s=await save("contractors",o);openContractor(s.id)}}
+  });
+}
+function openContractor(id){
+  openSheet({title:()=>esc((byId("contractors",id)||{}).name||""),
+    body:()=>{const c=byId("contractors",id);if(!c)return`<div class="empty">Deleted.</div>`;
+      const t=teamOf(c);const mates=t?membersOf(t.id).filter(x=>x.id!==c.id):[];
+      const ps=projectsOfContractor(c.id);const act=ps.filter(p=>p.status!=="completed");const comp=ps.filter(p=>p.status==="completed");
+      const l=load(unitFor(c));
+      return `<div class="panel"><dl class="kv">
+        <dt>Phone</dt><dd><span class="mono">${esc(fmtPhone(c.phone)||"—")}</span>${c.phone?`<div class="pill-btns" style="margin-top:6px"><a class="btn sm" href="tel:${digits(c.phone)}">Call</a><a class="btn sm wa" href="${waLink(c.phone,"")}" target="_blank" rel="noopener">WhatsApp</a><button class="btn sm" data-act="copy-contact" data-name="${esc(c.name)}" data-phone="${esc(c.phone)}" data-note="Contractor${c.skills&&c.skills.length?" — "+esc(c.skills.join(", ")):""}">Copy contact</button></div>`:""}</dd>
+        <dt>License #</dt><dd>${esc(c.license||"—")}</dd>
+        <dt>Skills</dt><dd><div class="chips">${(c.skills||[]).map(s=>`<span class="tag skill">${esc(s)}</span>`).join("")||"—"}</div></dd>
+        <dt>Team</dt><dd>${t?`<a href="#" data-act="team-open" data-id="${t.id}">${esc(t.name)}</a>`:"Works solo"}</dd>
+        ${t?`<dt>Teammates</dt><dd>${mates.length?mates.map(m=>`<a href="#" data-act="contractor-open" data-id="${m.id}">${esc(m.name)}</a>`).join(", "):"—"}</dd>`:""}
+      </dl>${loadBar(l,t?"Team load":"Load")}
+      ${c.notes?`<div style="margin-top:10px;white-space:pre-wrap;font-size:14px">${esc(c.notes)}</div>`:""}</div>
+      <div class="panel"><h3>Active & pending jobs (${act.length})</h3>${jobList(act)}</div>
+      <div class="panel"><h3>Completed jobs (${comp.length})</h3>${jobList(comp)}</div>`},
+    foot:`<button class="btn" data-act="sheet-close">Close</button><button class="btn primary" data-act="contractor-edit" data-id="${id}">Edit</button>`
+  });
+}
+function jobList(ps){return ps.length?`<div class="list">${ps.map(p=>`<div class="li" data-act="project-open" data-id="${p.id}" style="cursor:pointer"><div class="grow"><div class="t">${esc(p.address)}</div><div class="s">${esc([p.city,p.jobType].filter(Boolean).join(" · "))}</div></div><span class="tag ${p.status}">${statusLabel(p.status)}</span></div>`).join("")}</div>`:`<div class="sub">None.</div>`}
+function teamForm(t){
+  t=t||{};const isNew=!t.id;
+  openSheet({title:isNew?"New team":"Edit team",
+    body:()=>`<form id="tform"><label class="f">Team name *</label><input type="text" name="name" required value="${esc(t.name)}" placeholder="e.g. Jose & Marco — Tile">
+      <label class="f">Job limit (active jobs at once)</label><input type="number" min="0" name="jobLimit" value="${esc(t.jobLimit||"")}" placeholder="e.g. 3">
+      <label class="f">Members</label>${S.contractors.length?`<div class="pickl">${S.contractors.map(c=>`<label><input type="checkbox" name="mem" value="${c.id}" ${c.teamId===t.id&&t.id?"checked":""}><span style="flex:1">${esc(c.name)}</span>${c.teamId&&c.teamId!==t.id&&byId("teams",c.teamId)?`<span class="sub">in ${esc(byId("teams",c.teamId).name)}</span>`:""}</label>`).join("")}</div>`:`<div class="sub">Add contractors first.</div>`}
+      <label class="f">Notes</label><textarea name="notes">${esc(t.notes)}</textarea></form>`,
+    foot:`${!isNew?`<button class="btn danger" data-act="team-del" data-id="${t.id}" style="margin-right:auto">Delete</button>`:""}<button class="btn" data-act="sheet-close">Cancel</button><button class="btn primary" data-act="team-save">Save</button>`,
+    onAct:{"team-save":async()=>{const f=$("#tform");if(!f.reportValidity())return;const fd=new FormData(f);
+      const o={...t,name:fd.get("name").toString().trim(),jobLimit:Number(fd.get("jobLimit"))||0,notes:(fd.get("notes")||"").toString()};
+      const s=await save("teams",o);const mem=fd.getAll("mem");
+      for(const c of S.contractors){const want=mem.includes(c.id);if(want&&c.teamId!==s.id)await save("contractors",{...c,teamId:s.id});else if(!want&&c.teamId===s.id)await save("contractors",{...c,teamId:""})}
+      openTeam(s.id)}}
+  });
+}
+function openTeam(id){
+  openSheet({title:()=>esc((byId("teams",id)||{}).name||""),
+    body:()=>{const t=byId("teams",id);if(!t)return`<div class="empty">Deleted.</div>`;const m=membersOf(id);const ps=projectsOfTeam(id);const l=load({type:"team",id});
+      const phones=m.filter(x=>x.phone);
+      return `<div class="panel">${loadBar(l,"Team load")}${t.notes?`<div style="margin-top:8px;white-space:pre-wrap">${esc(t.notes)}</div>`:""}</div>
+      <div class="panel"><h3>Members</h3>${m.length?`<div class="list">${m.map(c=>`<div class="li" data-act="contractor-open" data-id="${c.id}" style="cursor:pointer"><div class="grow"><div class="t">${esc(c.name)}</div><div class="s">${esc((c.skills||[]).join(", "))}</div></div><span class="mono sub">${esc(fmtPhone(c.phone))}</span></div>`).join("")}</div>`:`<div class="sub">No members.</div>`}</div>
+      <div class="panel"><h3>Active & pending</h3>${jobList(ps.filter(p=>p.status!=="completed"))}</div>
+      <div class="panel"><h3>Completed</h3>${jobList(ps.filter(p=>p.status==="completed"))}</div>`},
+    foot:`<button class="btn" data-act="sheet-close">Close</button><button class="btn primary" data-act="team-edit" data-id="${id}">Edit</button>`
+  });
+}
+
+/* ---------- Map ---------- */
+function viewMap(){
+  return `<div class="row" style="margin-bottom:10px"><h2>Map</h2><span class="sub">Active jobs</span><div class="spacer"></div>
+    <button class="btn sm ${UI.mapEdit?"primary":""}" data-act="map-edit">${UI.mapEdit?"Done moving pins":"Move pins"}</button></div>
+  <div class="mapwrap">
+    <div class="mapbox" id="mapbox">
+      <svg id="mapsvg" viewBox="0 0 ${MAPW.toFixed(0)} ${MAPH.toFixed(0)}" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="maplegend" id="maplegend"></div>
+      <div class="mapctl"><button data-act="zoom" data-v="in">+</button><button data-act="zoom" data-v="out">−</button><button data-act="zoom" data-v="fit" style="font-size:12px">Fit</button></div>
+      <div id="mappop"></div>
+    </div>
+    <div class="side" id="mapside"></div>
+  </div>`;
+}
+function mapBase(){
+  let s=`<rect x="-2000" y="-2000" width="${MAPW+4000}" height="${MAPH+4000}" fill="#e9efe6"/>`;
+  // grid
+  for(let la=33.4;la<=34.25;la+=0.1){const [,y]=proj(la,0);s+=`<line x1="-2000" x2="${MAPW+2000}" y1="${y}" y2="${y}" stroke="#dde5da" stroke-width="1"/>`}
+  for(let ln=-117.8;ln<=-116.8;ln+=0.1){const [x]=proj(0,ln);s+=`<line y1="-2000" y2="${MAPH+2000}" x1="${x}" x2="${x}" stroke="#dde5da" stroke-width="1"/>`}
+  for(const [name,pts] of FREEWAYS){
+    const d=pts.map((p,i)=>{const [x,y]=proj(p[0],p[1]);return (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}).join(" ");
+    s+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" class="fw"/><path d="${d}" fill="none" stroke="#e8b04a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" class="fw2"/>`;
+    const mid=pts[Math.floor(pts.length/2)];const [mx,my]=proj(mid[0],mid[1]);
+    s+=`<g class="shield" transform="translate(${mx.toFixed(1)},${my.toFixed(1)})"><rect x="-13" y="-9" width="26" height="18" rx="4" fill="#2a5d8f"/><text text-anchor="middle" y="4.5" font-size="11" font-weight="700" fill="#fff" font-family="IBM Plex Sans, system-ui, sans-serif">${name}</text></g>`;
+  }
+  for(const [n,[la,ln]] of Object.entries(CITIES)){const [x,y]=proj(la,ln);
+    s+=`<g class="city" transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="3.2" fill="#7b817d"/><text x="6" y="4" font-size="12.5" fill="#3e4642" font-weight="600" font-family="IBM Plex Sans, system-ui, sans-serif" paint-order="stroke" stroke="#e9efe6" stroke-width="3">${esc(n)}</text></g>`}
+  return s;
+}
+const PIN_COLORS={"Bathroom remodel":"#2a5d8f","Kitchen remodel":"#b23a2e","Painting":"#8a4fb0","Concrete / Asphalt":"#555","Electrical":"#c48a00","Plumbing":"#1d8a8a","Water damage / Insurance":"#2f7a4f","Flooring":"#a0522d","New construction / ADU":"#1f4d3f","Other":"#68706b"};
+function pinsSvg(scale){
+  const act=S.projects.filter(p=>p.status==="active");let s="";
+  for(const p of act){const c=coordsOf(p);if(!c)continue;const [x,y]=proj(c[0],c[1]);const sel=UI.mapSel===p.id;const col=PIN_COLORS[p.jobType]||"#68706b";const k=scale;
+    s+=`<g class="pin" data-pid="${p.id}" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k})" style="cursor:${UI.mapEdit?"move":"pointer"}">
+      <path d="M0 0 C -9 -12 -11 -16 -11 -21 A 11 11 0 1 1 11 -21 C 11 -16 9 -12 0 0Z" fill="${col}" stroke="${sel?"#f2c14e":"#fff"}" stroke-width="${sel?3.5:2}"/>
+      <circle cy="-21" r="4.2" fill="#fff"/>${UI.route[p.id]?`<text y="-17" text-anchor="middle" font-size="11" font-weight="700" fill="${col}" font-family="IBM Plex Sans, system-ui, sans-serif">${routeOrder().indexOf(p.id)+1}</text>`:""}</g>`}
+  return s;
+}
+function routeOrder(){return S.projects.filter(p=>p.status==="active"&&UI.route[p.id]).sort((a,b)=>(UI.route[a.id]-UI.route[b.id])).map(p=>p.id)}
+function curScale(){const v=UI.mapView||[0,0,MAPW,MAPH];return Math.max(.35,Math.min(1.4,v[2]/MAPW*1.3))}
+function refreshMap(){
+  const svg=$("#mapsvg");if(!svg)return;
+  if(!svg.dataset.base){svg.innerHTML=`<g id="mbase">${mapBase()}</g><g id="mpins"></g>`;svg.dataset.base=1}
+  const v=UI.mapView||[0,0,MAPW,MAPH];svg.setAttribute("viewBox",v.map(n=>n.toFixed(1)).join(" "));
+  const sc=curScale();
+  svg.querySelectorAll(".city").forEach(g=>{const t=g.getAttribute("transform").replace(/ scale\(.*\)/,"");g.setAttribute("transform",t+` scale(${sc})`)});
+  svg.querySelectorAll(".shield").forEach(g=>{const t=g.getAttribute("transform").replace(/ scale\(.*\)/,"");g.setAttribute("transform",t+` scale(${sc})`)});
+  svg.querySelectorAll(".fw").forEach(e=>e.setAttribute("stroke-width",7*sc));svg.querySelectorAll(".fw2").forEach(e=>e.setAttribute("stroke-width",3.2*sc));
+  $("#mpins").innerHTML=pinsSvg(sc);
+  const act=S.projects.filter(p=>p.status==="active");const unplaced=act.filter(p=>!coordsOf(p));
+  const types=[...new Set(act.map(p=>p.jobType))];
+  $("#maplegend").innerHTML=types.length?types.map(t=>`<div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${PIN_COLORS[t]||"#68706b"};margin-right:5px"></span>${esc(t)}</div>`).join(""):"No active jobs";
+  const p=UI.mapSel&&byId("projects",UI.mapSel);
+  $("#mappop").innerHTML=p?`<div class="mappop"><div class="row" style="flex-wrap:nowrap"><div style="flex:1;min-width:0"><div style="font-weight:600">${esc(p.address)}</div><div class="sub">${esc([p.city,p.jobType,p.clientName].filter(Boolean).join(" · "))}</div></div><button class="btn sm ghost" data-act="map-close">✕</button></div>
+    <div class="pill-btns" style="margin-top:8px"><button class="btn sm primary" data-act="project-open" data-id="${p.id}">Open project</button><a class="btn sm" href="${gmaps(fullAddr(p))}" target="_blank" rel="noopener">Navigate</a><button class="btn sm" data-act="route-toggle" data-id="${p.id}">${UI.route[p.id]?"Remove from route":"Add to route"}</button></div></div>`:"";
+  const ro=routeOrder();
+  const routeUrl=ro.length?`https://www.google.com/maps/dir/${["Current+Location",...ro.map(id=>encodeURIComponent(fullAddr(byId("projects",id))))].join("/")}`:"";
+  $("#mapside").innerHTML=`<div class="panel"><h3>Today's route</h3>
+    <div class="sub" style="margin-bottom:8px">Tap jobs to add stops in order, then open the route in Google Maps.</div>
+    ${ro.length?`<ol style="margin:0 0 8px;padding-left:20px;font-size:14px">${ro.map(id=>`<li>${esc(byId("projects",id).address)}</li>`).join("")}</ol>
+    <div class="pill-btns"><a class="btn sm primary" href="${routeUrl}" target="_blank" rel="noopener">Open route in Google Maps</a><button class="btn sm" data-act="route-clear">Clear</button></div>`:`<div class="sub">No stops yet.</div>`}</div>
+    <div class="panel"><h3>Active jobs (${act.length})</h3><div class="list">${act.map(p=>`<div class="li" style="cursor:pointer;${UI.mapSel===p.id?"border-color:var(--brand2)":""}" data-act="map-pick" data-id="${p.id}"><input type="checkbox" data-act="route-toggle" data-id="${p.id}" ${UI.route[p.id]?"checked":""} style="accent-color:var(--brand);width:17px;height:17px"><div class="grow"><div class="t">${esc(p.address)}</div><div class="s">${esc(p.city||"No city")}${!coordsOf(p)?" · not on map":""}</div></div></div>`).join("")||`<div class="sub">No active jobs.</div>`}</div>
+    ${unplaced.length?`<div class="infobox" style="margin-top:8px">${unplaced.length} job(s) have no recognized city, so they aren't on the map. Set the city to one of your service cities.</div>`:""}</div>
+    <div class="sub">Pins sit near the city center. Use <b>Move pins</b> to drag a pin to the exact spot.</div>`;
+}
+let mapBound=false;
+function bindMap(){
+  refreshMap();
+  const svg=$("#mapsvg");if(!svg||svg.dataset.bound)return;svg.dataset.bound=1;
+  const pts=new Map();let start=null,dragPin=null,moved=false;
+  const toSvg=(cx,cy)=>{const r=svg.getBoundingClientRect();const v=UI.mapView||[0,0,MAPW,MAPH];const s=Math.max(v[2]/r.width,v[3]/r.height);const ox=v[0]+(v[2]-r.width*s)/2,oy=v[1]+(v[3]-r.height*s)/2;return [ox+(cx-r.left)*s,oy+(cy-r.top)*s,s]};
+  const zoomAt=(f,cx,cy)=>{const v=UI.mapView||[0,0,MAPW,MAPH];const [x,y]=toSvg(cx,cy);let w=Math.min(MAPW*1.6,Math.max(60,v[2]*f));let h=w*v[3]/v[2];UI.mapView=[x-(x-v[0])*w/v[2],y-(y-v[1])*h/v[3],w,h];refreshMap()};
+  svg.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.deltaY>0?1.15:1/1.15,e.clientX,e.clientY)},{passive:false});
+  svg.addEventListener("pointerdown",e=>{
+    svg.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);moved=false;
+    const pin=e.target.closest(".pin");
+    if(pin&&UI.mapEdit){dragPin=pin.dataset.pid;return}
+    start={v:[...(UI.mapView||[0,0,MAPW,MAPH])],x:e.clientX,y:e.clientY,pin:pin&&pin.dataset.pid,dist:null};
+    if(pts.size===2){const a=[...pts.values()];start.dist=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);start.mid=[(a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2]}
+    svg.classList.add("dragging");
+  });
+  svg.addEventListener("pointermove",e=>{
+    if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(dragPin){moved=true;const [x,y,s]=toSvg(e.clientX,e.clientY);const g=svg.querySelector(`.pin[data-pid="${dragPin}"]`);if(g)g.setAttribute("transform",`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${curScale()})`);return}
+    if(!start)return;
+    if(pts.size===2&&start.dist){const a=[...pts.values()];const d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);if(d>0){const f=start.dist/d;start.dist=d;zoomAt(f,start.mid[0],start.mid[1])}moved=true;return}
+    const dx=e.clientX-start.x,dy=e.clientY-start.y;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;
+    const r=svg.getBoundingClientRect();const s=Math.max(start.v[2]/r.width,start.v[3]/r.height);
+    UI.mapView=[start.v[0]-dx*s,start.v[1]-dy*s,start.v[2],start.v[3]];
+    svg.setAttribute("viewBox",UI.mapView.map(n=>n.toFixed(1)).join(" "));
+  });
+  const end=e=>{
+    pts.delete(e.pointerId);svg.classList.remove("dragging");
+    if(dragPin){const id=dragPin;dragPin=null;if(moved){const [x,y]=toSvg(e.clientX,e.clientY);const [lat,lng]=unproj(x,y);const p=byId("projects",id);if(p)save("projects",{...p,lat:+lat.toFixed(5),lng:+lng.toFixed(5)})}return}
+    if(start&&!moved&&start.pin){UI.mapSel=start.pin;refreshMap()}
+    else if(start&&!moved&&!start.pin&&UI.mapSel){UI.mapSel=null;refreshMap()}
+    if(pts.size===0)start=null;
+  };
+  svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);
+}
+
+/* ---------- Office ---------- */
+function viewOffice(){
+  const q=UI.osearch.toLowerCase();
+  const items=S.office.filter(o=>(UI.ocat==="All"||o.cat===UI.ocat)&&(!q||[o.title,o.cat,o.city,(o.items||[]).map(i=>i.text).join(" ")].join(" ").toLowerCase().includes(q))).sort((a,b)=>(a.cat||"").localeCompare(b.cat||"")||(a.title||"").localeCompare(b.title||""));
+  const cnt={};S.office.forEach(o=>cnt[o.cat]=(cnt[o.cat]||0)+1);
+  return `<div class="row"><h2>Office</h2><span class="sub">Your personal folder</span><div class="spacer"></div>
+    <button class="btn" data-act="tile-calc">Tile calculator</button><button class="btn" data-act="office-checklist">+ Checklist</button>${ASSETS?`<label class="btn primary">+ Upload file<input type="file" id="ofile" multiple ${MODE==="db"?'accept="image/*,application/pdf,text/plain,text/csv"':""} class="hidden"></label>`:""}</div>
+  ${!ASSETS?`<div class="infobox">${MODE==="db"?"File uploads need edit access to this app.":"File uploads aren't available in this browser."} Checklists work everywhere.</div>`:""}
+  <div class="row" style="margin:12px 0 10px"><div class="chips">${["All",...OFFICE_CATS].map(c=>`<button class="chip ${UI.ocat===c?"on":""}" data-act="ocat" data-v="${esc(c)}">${esc(c)}${c!=="All"&&cnt[c]?`<span class="n">${cnt[c]}</span>`:""}</button>`).join("")}</div><div class="spacer"></div>
+    <input type="search" id="osearch" placeholder="Search…" value="${esc(UI.osearch)}" style="max-width:240px"></div>
+  ${items.length?`<div class="cards">${items.map(o=>{
+    if(o.kind==="file"){const img=(o.type||"").startsWith("image/");const url=fileUrl(o.assetId);return `<div class="card" style="cursor:default"><div class="row" style="flex-wrap:nowrap">${img?`<img class="thumb" src="${esc(url)}" alt="">`:`<div class="thumb">${esc(((o.name||"").split(".").pop()||"").toUpperCase().slice(0,4))}</div>`}<div style="flex:1;min-width:0"><div class="addr" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.title)}</div><div class="meta">${esc(o.cat)}${o.city?" · "+esc(o.city):""}</div></div></div>
+      <div class="pill-btns" style="margin-top:10px"><a class="btn sm primary" href="${esc(url)}" target="_blank" rel="noopener">Open</a><button class="btn sm" data-act="office-edit" data-id="${o.id}">Rename</button>${ASSETS?`<button class="btn sm danger" data-act="office-del" data-id="${o.id}">Delete</button>`:""}</div></div>`}
+    const n=(o.items||[]).filter(i=>i.done).length;
+    return `<div class="card" data-act="office-open" data-id="${o.id}"><div class="row"><div class="addr" style="flex:1">${esc(o.title)}</div><span class="tag">Checklist</span></div><div class="meta">${esc(o.cat)}${o.city?" · "+esc(o.city):""} · ${(o.items||[]).length} items</div>${(o.items||[]).length?`<div class="bar"><i style="width:${Math.round(n/(o.items.length)*100)}%"></i></div>`:""}</div>`}).join("")}</div>`
+   :`<div class="empty">${S.office.length?"Nothing matches.":"Keep your completion form, finance form, city inspection checklists and material lists here."}</div>`}
+  <div class="section-title"><h3>Job type templates</h3><span class="sub">The materials, watch-outs and completion checklists every new job of that type starts with.</span></div>
+  <div class="cards">${JOB_TYPES.map(t=>{const T=templates()[t];return `<div class="card" data-act="tpl-edit" data-v="${esc(t)}"><div class="addr">${esc(t)}</div><div class="meta">${T.materials.length} materials · ${T.watch.length} watch-outs · ${T.done.length} completion</div></div>`}).join("")}</div>
+  <div class="section-title"><h3>Settings</h3></div>
+  <div class="panel"><div class="grid2"><div><label class="f" style="margin-top:0">Your name (used in WhatsApp messages)</label><input type="text" id="myname" value="${esc(S.settings.myName||"")}" placeholder="Your first name"></div>
+    <div><label class="f" style="margin-top:0">Company name</label><input type="text" id="mycompany" value="${esc(S.settings.company||"")}" placeholder="California Home Center"></div></div>
+    <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" data-act="save-name">Save</button></div></div>
+  ${MODE!=="db"?`<div class="section-title"><h3>Backup</h3><span class="sub">Your data is stored in this browser only. Export a backup regularly, and use it to move to another phone or computer.</span></div>
+  <div class="panel"><div class="pill-btns"><button class="btn primary" data-act="backup-export">Export backup</button><label class="btn">Import backup<input type="file" id="backupfile" accept=".json,application/json" class="hidden"></label></div>
+  <div class="sub" style="margin-top:8px">The backup includes projects, contractors, teams, checklists, settings and uploaded files.</div></div>`:""}`;
+}
+function checklistForm(o){
+  o=o||{kind:"checklist",cat:"Inspection checklist",items:[]};const isNew=!o.id;
+  openSheet({title:isNew?"New checklist":"Edit checklist",
+    body:()=>`<form id="oform"><label class="f">Title *</label><input type="text" name="title" required value="${esc(o.title)}" placeholder="Riverside — final inspection">
+     <div class="grid2"><div><label class="f">Category</label><select name="cat">${OFFICE_CATS.map(c=>`<option ${o.cat===c?"selected":""}>${c}</option>`).join("")}</select></div>
+     <div><label class="f">City (optional)</label><input type="text" name="city" list="citylist2" value="${esc(o.city)}"><datalist id="citylist2">${Object.keys(CITIES).map(c=>`<option value="${esc(c)}">`).join("")}</datalist></div></div>
+     <label class="f">Items — one per line</label><textarea name="items" style="min-height:220px">${esc((o.items||[]).map(i=>i.text).join("\n"))}</textarea></form>`,
+    foot:`${!isNew?`<button class="btn danger" data-act="office-del" data-id="${o.id}" style="margin-right:auto">Delete</button>`:""}<button class="btn" data-act="sheet-close">Cancel</button><button class="btn primary" data-act="office-save">Save</button>`,
+    onAct:{"office-save":async()=>{const f=$("#oform");if(!f.reportValidity())return;const fd=new FormData(f);const old={};(o.items||[]).forEach(i=>old[i.text]=i.done);
+      const items=fd.get("items").toString().split("\n").map(s=>s.trim()).filter(Boolean).map(text=>({text,done:!!old[text]}));
+      const s=await save("office",{...o,title:fd.get("title").toString().trim(),cat:fd.get("cat").toString(),city:fd.get("city").toString().trim(),items});openChecklist(s.id)}}
+  });
+}
+function openChecklist(id){
+  openSheet({title:()=>esc((byId("office",id)||{}).title||""),
+    body:()=>{const o=byId("office",id);if(!o)return`<div class="empty">Deleted.</div>`;const n=(o.items||[]).filter(i=>i.done).length;
+      return `<div class="row"><span class="tag">${esc(o.cat)}</span>${o.city?`<span class="sub">${esc(o.city)}</span>`:""}<div class="spacer"></div><span class="mono sub">${n}/${(o.items||[]).length}</span></div>
+      <div class="panel"><div class="checks">${(o.items||[]).map((it,i)=>`<label class="${it.done?"done":""}"><input type="checkbox" data-act="ocheck" data-i="${i}" ${it.done?"checked":""}><span>${esc(it.text)}</span></label>`).join("")||`<div class="sub">No items.</div>`}</div></div>
+      <div class="pill-btns"><button class="btn sm" data-act="oreset">Uncheck all</button><button class="btn sm" data-act="ocopy">Copy as text</button><a class="btn sm wa" href="${waShare(o.title+"\n"+(o.items||[]).map(i=>`${i.done?"✅":"⬜️"} ${i.text}`).join("\n"))}" target="_blank" rel="noopener">Send via WhatsApp</a></div>`},
+    foot:`<button class="btn" data-act="sheet-close">Close</button><button class="btn primary" data-act="office-edit" data-id="${id}">Edit</button>`,
+    onAct:{ocheck:(el)=>{const o=byId("office",id);const items=o.items.map((it,i)=>i===Number(el.dataset.i)?{...it,done:el.checked}:it);save("office",{...o,items})},
+      oreset:()=>{const o=byId("office",id);save("office",{...o,items:o.items.map(i=>({...i,done:false}))})},
+      ocopy:()=>{const o=byId("office",id);copy(o.title+"\n"+o.items.map(i=>`${i.done?"✅":"⬜️"} ${i.text}`).join("\n"))}}
+  });
+}
+function templateForm(type){
+  const T=templates()[type];
+  openSheet({title:esc(type)+" — template",
+    body:()=>`<div class="sub">One item per line. Changes apply to every ${esc(type.toLowerCase())} job; checked items on existing jobs stay checked if the wording is unchanged.</div>
+     <form id="tplform"><label class="f">Typical materials</label><textarea name="materials" style="min-height:160px">${esc(T.materials.join("\n"))}</textarea>
+     <label class="f">Watch-outs (things to pay attention to)</label><textarea name="watch" style="min-height:160px">${esc(T.watch.join("\n"))}</textarea>
+     <label class="f">Completion / handover checklist</label><textarea name="done" style="min-height:160px">${esc(T.done.join("\n"))}</textarea></form>`,
+    foot:`<button class="btn" data-act="tpl-reset" style="margin-right:auto">Reset to default</button><button class="btn" data-act="sheet-close">Cancel</button><button class="btn primary" data-act="tpl-save">Save</button>`,
+    onAct:{"tpl-save":()=>{const fd=new FormData($("#tplform"));const split=k=>fd.get(k).toString().split("\n").map(s=>s.trim()).filter(Boolean);
+      const all={...(S.settings.templates||{})};all[type]={materials:split("materials"),watch:split("watch"),done:split("done")};saveSettings({templates:all});closeSheet();toast("Template saved")},
+     "tpl-reset":()=>confirmDlg(`Reset the ${type} template to the default list?`,()=>{const all={...(S.settings.templates||{})};delete all[type];saveSettings({templates:all});closeSheet()})}
+  });
+}
+
+/* ---------- Tile calculator ---------- */
+function tileCalc(pid){
+  const st={surfaces:[{name:"Shower walls",l:"",w:"",sign:1},{name:"Floor",l:"",w:"",sign:1}],tw:12,tl:24,mode:"pcs",perBox:"",sqftBox:"",waste:10};
+  const p=pid&&byId("projects",pid);
+  const parseLen=v=>{v=String(v||"").trim();if(!v)return 0;const m=v.match(/^(\d+(?:\.\d+)?)\s*(?:'|ft)?\s*(?:(\d+(?:\.\d+)?)\s*(?:"|in)?)?$/);if(m)return Number(m[1])+(m[2]?Number(m[2])/12:0);return Number(v)||0};
+  const calc=()=>{
+    const area=st.surfaces.reduce((a,s)=>a+s.sign*parseLen(s.l)*parseLen(s.w),0);
+    const tile=(Number(st.tw)||0)*(Number(st.tl)||0)/144;
+    const withW=area*(1+(Number(st.waste)||0)/100);
+    const tiles=tile>0?Math.ceil(withW/tile):0;
+    let boxes=0;if(st.mode==="pcs"&&Number(st.perBox)>0)boxes=Math.ceil(tiles/Number(st.perBox));if(st.mode==="sqft"&&Number(st.sqftBox)>0)boxes=Math.ceil(withW/Number(st.sqftBox));
+    return {area,withW,tile,tiles,boxes};
+  };
+  const out=()=>{const r=calc();return `<div class="calc-out"><div><span>Area</span><b>${r.area.toFixed(1)}</b><span>sq ft (+${st.waste}% = ${r.withW.toFixed(1)})</span></div><div><span>Tiles</span><b>${r.tiles||"—"}</b><span>pieces incl. waste</span></div><div><span>Boxes</span><b>${r.boxes||"—"}</b><span>${st.mode==="pcs"?"by pieces/box":"by sq ft/box"}</span></div></div>`};
+  const summary=()=>{const r=calc();return `Tile calc${p?" — "+p.address:""}\n`+st.surfaces.filter(s=>parseLen(s.l)&&parseLen(s.w)).map(s=>`${s.sign<0?"− ":""}${s.name}: ${s.l} × ${s.w}`).join("\n")+`\nArea: ${r.area.toFixed(1)} sq ft, +${st.waste}% waste = ${r.withW.toFixed(1)} sq ft\nTile ${st.tw}"×${st.tl}" → ${r.tiles} pcs${r.boxes?`, ${r.boxes} boxes`:""}`};
+  openSheet({title:"Tile calculator"+(p?" — "+esc(p.address):""),
+    body:()=>`<div id="calcout">${out()}</div>
+      <div class="panel"><h3>Surfaces</h3><div class="sub" style="margin-bottom:8px">Enter feet (5.5) or feet + inches (5' 6"). Mark windows, niches and the tub as openings to subtract them.</div>
+      <div id="surfs">${st.surfaces.map((s,i)=>`<div class="surf"><input class="nm" data-k="name" data-i="${i}" type="text" value="${esc(s.name)}"><input data-k="l" data-i="${i}" type="text" inputmode="decimal" placeholder="Length" value="${esc(s.l)}"><input data-k="w" data-i="${i}" type="text" inputmode="decimal" placeholder="Width / height" value="${esc(s.w)}"><select data-k="sign" data-i="${i}" style="width:auto"><option value="1" ${s.sign>0?"selected":""}>+ Area</option><option value="-1" ${s.sign<0?"selected":""}>− Opening</option></select><button class="btn sm ghost" data-act="surf-rm" data-i="${i}">✕</button></div>`).join("")}</div>
+      <div class="pill-btns"><button class="btn sm" data-act="surf-add" data-v="Wall">+ Wall</button><button class="btn sm" data-act="surf-add" data-v="Floor">+ Floor</button><button class="btn sm" data-act="surf-add" data-v="Window / niche" data-sign="-1">− Opening</button></div></div>
+      <div class="panel"><h3>Tile</h3><div class="grid2"><div><label class="f">Tile width (in)</label><input type="number" step="any" data-g="tw" value="${st.tw}"></div><div><label class="f">Tile length (in)</label><input type="number" step="any" data-g="tl" value="${st.tl}"></div></div>
+      <label class="f">Box size</label><div class="seg" style="margin-bottom:6px"><button data-act="calc-mode" data-v="pcs" class="${st.mode==="pcs"?"on":""}">Pieces per box</button><button data-act="calc-mode" data-v="sqft" class="${st.mode==="sqft"?"on":""}">Sq ft per box</button></div>
+      ${st.mode==="pcs"?`<input type="number" data-g="perBox" placeholder="e.g. 8" value="${esc(st.perBox)}">`:`<input type="number" step="any" data-g="sqftBox" placeholder="e.g. 15.5" value="${esc(st.sqftBox)}">`}
+      <label class="f">Waste / cuts</label><div class="chips">${[10,12,15,20].map(w=>`<button class="chip ${Number(st.waste)===w?"on":""}" data-act="calc-waste" data-v="${w}">${w}%</button>`).join("")}</div></div>
+      <div class="sub">Tip: use 15% for diagonal / herringbone layouts or large-format tile.</div>`,
+    foot:`<button class="btn" data-act="calc-copy">Copy</button>${p?`<button class="btn primary" data-act="calc-log">Save to project log</button>`:""}<button class="btn" data-act="sheet-close">Close</button>`,
+    after(){const sb=$("#sheet-body");sb.oninput=e=>{const t=e.target;if(t.dataset.k){const s=st.surfaces[Number(t.dataset.i)];s[t.dataset.k]=t.dataset.k==="sign"?Number(t.value):t.value}else if(t.dataset.g){st[t.dataset.g]=t.value}else return;$("#calcout").innerHTML=out()};sb.onchange=sb.oninput},
+    onAct:{"surf-add":(el)=>{st.surfaces.push({name:el.dataset.v,l:"",w:"",sign:Number(el.dataset.sign||1)});sheet.refresh(true)},
+      "surf-rm":(el)=>{st.surfaces.splice(Number(el.dataset.i),1);sheet.refresh(true)},
+      "calc-mode":(el)=>{st.mode=el.dataset.v;sheet.refresh(true)},
+      "calc-waste":(el)=>{st.waste=Number(el.dataset.v);sheet.refresh(true)},
+      "calc-copy":()=>copy(summary()),
+      "calc-log":()=>{const cur=byId("projects",pid);save("projects",{...cur,log:[...(cur.log||[]),{t:now(),text:summary()}]});toast("Saved to log")}},
+    static:true
+  });
+}
+
+
+/* ============ backup ============ */
+const blobToDataURL=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(b)});
+async function exportBackup(){
+  toast("Preparing backup…");
+  const files={};
+  if(hasIDB()){try{for(const k of (await IDB.keys())||[]){const b=await IDB.get(k);if(b)files[k]=await blobToDataURL(b)}}catch(e){}}
+  const data={app:"chc-field-crm",version:1,exportedAt:now(),projects:S.projects,contractors:S.contractors,teams:S.teams,office:S.office,settings:S.settings,files};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`field-crm-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+async function importBackup(file){
+  let d;try{d=JSON.parse(await file.text())}catch(e){toast("That file isn't a valid backup");return}
+  if(!d||d.app!=="chc-field-crm"){toast("That file isn't a Field CRM backup");return}
+  confirmDlg(`Replace everything on this device with the backup from ${fmtDate(d.exportedAt)}? (${(d.projects||[]).length} projects, ${(d.contractors||[]).length} contractors)`,async()=>{
+    for(const c of COLS)S[c]=Array.isArray(d[c])?d[c]:[];
+    S.settings=d.settings||{};lsSave();
+    if(hasIDB()&&d.files){for(const [k,v] of Object.entries(d.files)){try{const b=await (await fetch(v)).blob();await IDB.put(k,b);URLS.delete(k)}catch(e){}}}
+    render();toast("Backup restored");
+  });
+}
+
+/* ============ sheet / dialog ============ */
+function openSheet(cfg){
+  closeSheet();
+  const L=$("#layer");const wrap=document.createElement("div");wrap.className="scrim";wrap.id="scrim";
+  const title=()=>typeof cfg.title==="function"?cfg.title():cfg.title;
+  wrap.innerHTML=`<div class="sheet" role="dialog"><div class="sh"><button class="btn sm ghost" data-act="sheet-close" aria-label="Close">✕</button><h2 id="sheet-title">${title()}</h2></div><div class="sb" id="sheet-body">${cfg.body()}</div>${cfg.foot?`<div class="sf">${cfg.foot}</div>`:""}</div>`;
+  L.appendChild(wrap);
+  wrap.addEventListener("click",e=>{if(e.target===wrap)closeSheet()});
+  sheet={cfg,refresh(force){
+    if(cfg.static&&!force)return;
+    const sb=$("#sheet-body");if(!sb)return;
+    // avoid clobbering an open form
+    if(!force&&sb.querySelector("form"))return;
+    const ae=document.activeElement;const keepId=ae&&ae.id&&sb.contains(ae)?ae.id:null;const val=keepId?ae.value:null;
+    const st=sb.parentElement.scrollTop;sb.innerHTML=cfg.body();$("#sheet-title").innerHTML=title();sb.parentElement.scrollTop=st;
+    if(keepId){const el=document.getElementById(keepId);if(el){el.value=val;el.focus()}}
+    cfg.after&&cfg.after();
+  }};
+  cfg.after&&cfg.after();
+  const first=wrap.querySelector("input[type=text]");if(first&&wrap.querySelector("form")&&window.matchMedia("(min-width:700px)").matches)first.focus();
+}
+function closeSheet(){const s=$("#scrim");if(s)s.remove();sheet=null}
+let dlgActs=null;
+function openDialog(html,acts){closeDialog();const d=document.createElement("div");d.className="dialog";d.id="dlg";d.innerHTML=`<div class="box">${html}</div>`;document.body.appendChild(d);dlgActs=acts||{};d.addEventListener("click",e=>{if(e.target===d)closeDialog()})}
+function closeDialog(){const d=$("#dlg");if(d)d.remove();dlgActs=null}
+function confirmDlg(msg,fn){openDialog(`<p style="margin:0 0 14px">${esc(msg)}</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="dlg-close">Cancel</button><button class="btn primary" data-act="dlg-ok">Yes</button></div>`,{"dlg-ok":()=>{closeDialog();fn()}})}
+
+/* ============ events ============ */
+document.addEventListener("click",async e=>{
+  const el=e.target.closest("[data-act]");
+  if(!el)return;
+  const a=el.dataset.act,id=el.dataset.id;
+  if(el.tagName==="A"&&el.getAttribute("href")==="#")e.preventDefault();
+  if(el.type==="checkbox"&&a==="route-toggle"){e.stopPropagation();}
+  if(dlgActs&&dlgActs[a]){dlgActs[a](el,e);return}
+  if(sheet&&sheet.cfg.onAct&&sheet.cfg.onAct[a]){sheet.cfg.onAct[a](el,e);return}
+  switch(a){
+    case "dlg-close":closeDialog();break;
+    case "sheet-close":closeSheet();break;
+    case "pfilter":UI.pfilter=el.dataset.v;render();break;
+    case "project-new":projectForm(null);break;
+    case "project-open":e.preventDefault();openProject(id);break;
+    case "project-edit":projectForm(byId("projects",id));break;
+    case "project-del":confirmDlg("Delete this project and its checklists, inspections and log? Files stay in storage until removed.",async()=>{closeSheet();await remove("projects",id);toast("Project deleted")});break;
+    case "contractor-new":contractorForm(null);break;
+    case "contractor-open":e.preventDefault();openContractor(id);break;
+    case "contractor-edit":contractorForm(byId("contractors",id));break;
+    case "contractor-del":confirmDlg("Delete this contractor? They'll be removed from their jobs.",async()=>{closeSheet();for(const p of S.projects.filter(p=>(p.contractorIds||[]).includes(id)))await save("projects",{...p,contractorIds:p.contractorIds.filter(x=>x!==id)});await remove("contractors",id)});break;
+    case "team-new":teamForm(null);break;
+    case "team-open":e.preventDefault();openTeam(id);break;
+    case "team-edit":teamForm(byId("teams",id));break;
+    case "team-del":confirmDlg("Delete this team? Members stay as solo contractors.",async()=>{closeSheet();for(const c of membersOf(id))await save("contractors",{...c,teamId:""});await remove("teams",id)});break;
+    case "cview":UI.ctab=el.dataset.v;render();break;
+    case "tile-calc":tileCalc(el.dataset.pid);break;
+    case "copy":copy(el.dataset.text);break;
+    case "copy-contact":copy(`${el.dataset.name}\n${fmtPhone(el.dataset.phone)}${el.dataset.note?"\n"+el.dataset.note:""}`);break;
+    case "map-edit":UI.mapEdit=!UI.mapEdit;$("#main").innerHTML=viewMap();bindMap();break;
+    case "zoom":{const svg=$("#mapsvg");const r=svg.getBoundingClientRect();if(el.dataset.v==="fit"){UI.mapView=null;refreshMap();break}const f=el.dataset.v==="in"?1/1.4:1.4;const v=UI.mapView||[0,0,MAPW,MAPH];const cx=v[0]+v[2]/2,cy=v[1]+v[3]/2;const w=Math.min(MAPW*1.6,Math.max(60,v[2]*f)),h=w*v[3]/v[2];UI.mapView=[cx-w/2,cy-h/2,w,h];refreshMap();break}
+    case "map-close":UI.mapSel=null;refreshMap();break;
+    case "map-pick":{UI.mapSel=id;const p=byId("projects",id);const c=p&&coordsOf(p);if(c){const [x,y]=proj(c[0],c[1]);const w=Math.min(MAPW,260),h=w*MAPH/MAPW;UI.mapView=[x-w/2,y-h/2,w,h]}refreshMap();break}
+    case "route-toggle":{if(UI.route[id])delete UI.route[id];else UI.route[id]=Date.now();refreshMap();break}
+    case "route-clear":UI.route={};refreshMap();break;
+    case "ocat":UI.ocat=el.dataset.v;render();break;
+    case "office-checklist":checklistForm(null);break;
+    case "office-open":openChecklist(id);break;
+    case "office-edit":{const o=byId("office",id);if(o.kind==="file"){openDialog(`<h3>Rename file</h3><form id="rform"><label class="f">Title</label><input type="text" name="title" value="${esc(o.title)}"><div class="grid2"><div><label class="f">Category</label><select name="cat">${OFFICE_CATS.map(c=>`<option ${o.cat===c?"selected":""}>${c}</option>`).join("")}</select></div><div><label class="f">City</label><input type="text" name="city" value="${esc(o.city)}"></div></div></form><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" data-act="dlg-close">Cancel</button><button class="btn primary" data-act="r-save">Save</button></div>`,{"r-save":()=>{const fd=new FormData($("#rform"));save("office",{...o,title:fd.get("title").toString().trim()||o.title,cat:fd.get("cat").toString(),city:fd.get("city").toString().trim()});closeDialog()}})}else checklistForm(o);break}
+    case "office-del":{const o=byId("office",id);confirmDlg(`Delete “${o.title}”?`,async()=>{closeSheet();await remove("office",id);if(o.kind==="file"&&ASSETS&&o.assetId){try{await ASSETS.delete(o.assetId)}catch(e){}}});break}
+    case "tpl-edit":templateForm(el.dataset.v);break;
+    case "save-name":saveSettings({myName:$("#myname").value.trim(),company:$("#mycompany").value.trim()});toast("Saved");break;
+    case "backup-export":exportBackup();break;
+  }
+});
+document.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.id==="psearch"){UI.psearch=t.value;render()}
+  if(t.id==="csearch"){UI.csearch=t.value;render()}
+  if(t.id==="osearch"){UI.osearch=t.value;render()}
+});
+document.addEventListener("change",async e=>{
+  if(e.target.id==="backupfile"&&e.target.files[0]){importBackup(e.target.files[0]);e.target.value="";return}
+  if(e.target.id==="ofile"){const fl=e.target.files;const up=await uploadFiles(fl,"Other");for(const u of up){const ext=(u.name.split(".").pop()||"").toLowerCase();const guess=/complet/i.test(u.name)?"Completion form":/financ|loan/i.test(u.name)?"Finance form":/inspect/i.test(u.name)?"Inspection checklist":/material/i.test(u.name)?"Material list":(UI.ocat!=="All"?UI.ocat:"Other");await save("office",{kind:"file",title:u.name.replace(/\.[^.]+$/,""),name:u.name,assetId:u.assetId,type:u.type,size:u.size,cat:guess})}if(up.length)toast(`Added ${up.length} file(s) — tap Rename to set the category`)}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("#dlg"))closeDialog();else closeSheet()}
+  if(e.key==="Enter"&&e.target.id==="newcheck"){e.preventDefault();const b=document.querySelector('[data-act="check-add"]');b&&b.click()}});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;go(b.dataset.tab)});
+function go(tab){UI.tab=tab;if(location.hash!=="#"+tab)try{history.replaceState(null,"","#"+tab)}catch(e){location.hash=tab}$("#main").innerHTML="";render();window.scrollTo(0,0)}
+function fromHash(){const h=(location.hash||"").slice(1);if(["projects","contractors","map","office"].includes(h)&&h!==UI.tab){UI.tab=h;$("#main").innerHTML="";render()}}
+window.addEventListener("hashchange",fromHash);
+const h0=(location.hash||"").slice(1);if(["projects","contractors","map","office"].includes(h0))UI.tab=h0;
+initStorage();
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")&&!window.claude){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+})();
+</script>
+</body>
+</html>
