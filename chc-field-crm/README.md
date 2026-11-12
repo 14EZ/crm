@@ -59,6 +59,17 @@ When it's hosted on GitHub Pages, **data stays on the device you use it on.** No
 3. In the repository go to **Settings → Pages**, set **Source: Deploy from a branch**, pick **main** and **/ (root)**, and save.
 4. After a minute the app is live at `https://<your-username>.github.io/chc-field-crm/`.
 
+## Publish on Vercel (alternative)
+
+1. Push the repo to GitHub as above (`index.html` at the top level).
+2. On vercel.com: **Add New → Project**, import the repo.
+3. Leave **Root Directory** as `./` and **Framework Preset** as **Other**. The included `vercel.json` already sets this and skips the build step.
+4. Deploy. The app is at `https://<project>.vercel.app/`.
+
+If you see **404 NOT_FOUND** on Vercel, it couldn't find `index.html` at the project's top level:
+- the files are inside a folder in the repo (move them to the root, or set **Settings → Build and Deployment → Root Directory** to that folder), or
+- an Output Directory such as `dist` or `public` is set (clear it), then **Redeploy**.
+
 ### Troubleshooting: "it doesn't open"
 - **404 or a page showing this README:** `index.html` isn't at the top of the repo (it's inside a folder, or the zip was uploaded). Move the files to the root. Also check that Settings → Pages points to `main` / `(root)`, and give it 1–2 minutes after each change.
 - **Blank or plain-text page on iPhone:** you opened the file from the Files app, Mail or a GitHub file view, which only *preview* files. Open the GitHub Pages link in Safari instead.
