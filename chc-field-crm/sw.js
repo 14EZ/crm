@@ -1,5 +1,5 @@
 // Offline support: serves the app shell from cache, refreshes it in the background.
-const CACHE = "field-crm-v1";
+const CACHE = "field-crm-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -15,8 +15,6 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
-  const isFont = /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
-  if (!sameOrigin && !isFont) return;
   e.respondWith(
     caches.match(req, { ignoreSearch: sameOrigin }).then(cached => {
       const network = fetch(req).then(res => {

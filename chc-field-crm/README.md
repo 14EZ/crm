@@ -47,7 +47,7 @@ When it's hosted on GitHub Pages, **data stays on the device you use it on.** No
 ## Publish on GitHub Pages
 
 1. Create a new repository on GitHub (for example `chc-field-crm`).
-2. Upload the contents of this folder (`index.html`, `manifest.webmanifest`, `sw.js`, `icons/`, `README.md`, `LICENSE`, `.gitignore`, `docs/`), or push with git:
+2. Upload the **files**, not the zip and not a folder. `index.html` must sit at the top level of the repository, next to `README.md`. On github.com: **Add file → Upload files**, then drag in `index.html`, `manifest.webmanifest`, `sw.js`, `LICENSE`, `README.md` and the `icons` and `docs` folders. Or push with git:
    ```bash
    git init
    git add .
@@ -58,6 +58,11 @@ When it's hosted on GitHub Pages, **data stays on the device you use it on.** No
    ```
 3. In the repository go to **Settings → Pages**, set **Source: Deploy from a branch**, pick **main** and **/ (root)**, and save.
 4. After a minute the app is live at `https://<your-username>.github.io/chc-field-crm/`.
+
+### Troubleshooting: "it doesn't open"
+- **404 or a page showing this README:** `index.html` isn't at the top of the repo (it's inside a folder, or the zip was uploaded). Move the files to the root. Also check that Settings → Pages points to `main` / `(root)`, and give it 1–2 minutes after each change.
+- **Blank or plain-text page on iPhone:** you opened the file from the Files app, Mail or a GitHub file view, which only *preview* files. Open the GitHub Pages link in Safari instead.
+- **A red bar at the top:** the app hit an error. The bar shows the message; reloading usually fixes it.
 
 ### Install on iPhone
 Open the link in **Safari** → tap **Share** → **Add to Home Screen**. It opens full-screen like an app and keeps working offline once loaded.

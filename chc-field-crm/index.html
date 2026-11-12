@@ -12,22 +12,20 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f4f1ea; --panel:#fffdf8; --ink:#1d2321; --muted:#68706b; --line:#e2ddd1; --line2:#d3ccbc;
   --brand:#1f4d3f; --brand2:#2f6b57; --brand-soft:#e3ece6;
   --amber:#b7791f; --amber-soft:#fbefd5; --green:#2f7a4f; --green-soft:#e1f0e6;
   --gray:#7b817d; --gray-soft:#eceae4; --red:#b23a2e; --red-soft:#f8e2de; --blue:#2a5d8f;
-  --r:12px; --shadow:0 1px 2px rgba(29,35,33,.06),0 4px 14px rgba(29,35,33,.06);
+  --r:12px; --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace; --shadow:0 1px 2px rgba(29,35,33,.06),0 4px 14px rgba(29,35,33,.06);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 a{color:var(--brand2)}
-.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.mono{font-family:var(--mono)}
 /* layout */
 header.top{position:sticky;top:0;z-index:20;background:var(--brand);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 16px}
 header.top .logo{font-weight:700;letter-spacing:.2px;font-size:16px;display:flex;align-items:center;gap:8px}
@@ -92,7 +90,7 @@ label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:1
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
 .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
-.stat b{display:block;font-size:22px;font-family:"IBM Plex Mono",monospace}
+.stat b{display:block;font-size:22px;font-family:var(--mono)}
 .stat span{font-size:12px;color:var(--muted)}
 @media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
 .warnbox{background:var(--red-soft);color:#7d2219;border-radius:10px;padding:8px 12px;font-size:13px;margin:8px 0}
@@ -152,7 +150,7 @@ label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:1
 .maplegend{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.9);border-radius:9px;padding:6px 9px;font-size:12px;color:var(--muted)}
 .side{display:flex;flex-direction:column;gap:8px;overflow:auto}
 .calc-out{background:var(--brand);color:#fff;border-radius:12px;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.calc-out b{display:block;font-size:24px;font-family:"IBM Plex Mono",monospace}
+.calc-out b{display:block;font-size:24px;font-family:var(--mono)}
 .calc-out span{font-size:12px;opacity:.8}
 .surf{display:grid;grid-template-columns:1.3fr 1fr 1fr auto auto;gap:6px;align-items:center;margin-bottom:6px}
 .surf input,.surf select{padding:7px 8px}
@@ -165,6 +163,11 @@ label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:1
 </style>
 </head>
 <body>
+<noscript><div style="padding:16px;background:#fbefd5">Field CRM needs JavaScript. Open this page in Safari or Chrome, not a file preview.</div></noscript>
+<div id="fatal" style="display:none;position:fixed;left:0;right:0;top:0;z-index:999;background:#b23a2e;color:#fff;padding:10px 14px;font:14px/1.4 sans-serif"></div>
+<script>
+window.addEventListener("error",function(e){var f=document.getElementById("fatal");if(!f)return;f.style.display="block";f.textContent="Something went wrong: "+(e.message||"unknown error")+". Try reloading the page.";});
+</script>
 <header class="top">
   <div class="logo"><i>CH</i> Field CRM</div>
   <div class="sync" id="sync"><b></b><span>Connecting…</span></div>
@@ -318,7 +321,11 @@ function hasIDB(){try{return !!window.indexedDB}catch(e){return false}}
 /* ============ storage ============ */
 const LSKEY="chc-crm-v1";
 function lsLoad(){try{const d=JSON.parse(localStorage.getItem(LSKEY)||"{}");for(const c of COLS)S[c]=d[c]||[];S.settings=d.settings||{}}catch(e){}}
-function lsSave(){try{localStorage.setItem(LSKEY,JSON.stringify({projects:S.projects,contractors:S.contractors,teams:S.teams,office:S.office,settings:S.settings}))}catch(e){}}
+let lsTimer=null;
+function lsSave(){clearTimeout(lsTimer);lsTimer=setTimeout(lsWrite,250)}
+addEventListener("pagehide",()=>{if(lsTimer){clearTimeout(lsTimer);lsWrite()}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&lsTimer){clearTimeout(lsTimer);lsWrite()}});
+function lsWrite(){lsTimer=null;try{localStorage.setItem(LSKEY,JSON.stringify({projects:S.projects,contractors:S.contractors,teams:S.teams,office:S.office,settings:S.settings}))}catch(e){}}
 const chains={};
 function serial(key,fn){const p=(chains[key]||Promise.resolve()).then(fn,fn);chains[key]=p.catch(()=>{});return p}
 function strip(o){const c={...o};delete c.id;return JSON.parse(JSON.stringify(c))}
@@ -413,7 +420,9 @@ function coordsOf(p){
 const salespeople=()=>[...new Set(S.projects.map(p=>p.salesperson).filter(Boolean))].sort();
 
 /* ============ render ============ */
-function render(){
+let renderQueued=false;
+function render(){if(renderQueued)return;renderQueued=true;requestAnimationFrame(()=>{renderQueued=false;renderNow()})}
+function renderNow(){
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===UI.tab));
   const m=$("#main");
   const ae=document.activeElement;const keep=ae&&ae.id&&m.contains(ae)?{id:ae.id,s:ae.selectionStart,e:ae.selectionEnd}:null;
@@ -780,10 +789,10 @@ function mapBase(){
     const d=pts.map((p,i)=>{const [x,y]=proj(p[0],p[1]);return (i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}).join(" ");
     s+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" class="fw"/><path d="${d}" fill="none" stroke="#e8b04a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" class="fw2"/>`;
     const mid=pts[Math.floor(pts.length/2)];const [mx,my]=proj(mid[0],mid[1]);
-    s+=`<g class="shield" transform="translate(${mx.toFixed(1)},${my.toFixed(1)})"><rect x="-13" y="-9" width="26" height="18" rx="4" fill="#2a5d8f"/><text text-anchor="middle" y="4.5" font-size="11" font-weight="700" fill="#fff" font-family="IBM Plex Sans, system-ui, sans-serif">${name}</text></g>`;
+    s+=`<g class="shield" transform="translate(${mx.toFixed(1)},${my.toFixed(1)})"><rect x="-13" y="-9" width="26" height="18" rx="4" fill="#2a5d8f"/><text text-anchor="middle" y="4.5" font-size="11" font-weight="700" fill="#fff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif">${name}</text></g>`;
   }
   for(const [n,[la,ln]] of Object.entries(CITIES)){const [x,y]=proj(la,ln);
-    s+=`<g class="city" transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="3.2" fill="#7b817d"/><text x="6" y="4" font-size="12.5" fill="#3e4642" font-weight="600" font-family="IBM Plex Sans, system-ui, sans-serif" paint-order="stroke" stroke="#e9efe6" stroke-width="3">${esc(n)}</text></g>`}
+    s+=`<g class="city" transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="3.2" fill="#7b817d"/><text x="6" y="4" font-size="12.5" fill="#3e4642" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif" paint-order="stroke" stroke="#e9efe6" stroke-width="3">${esc(n)}</text></g>`}
   return s;
 }
 const PIN_COLORS={"Bathroom remodel":"#2a5d8f","Kitchen remodel":"#b23a2e","Painting":"#8a4fb0","Concrete / Asphalt":"#555","Electrical":"#c48a00","Plumbing":"#1d8a8a","Water damage / Insurance":"#2f7a4f","Flooring":"#a0522d","New construction / ADU":"#1f4d3f","Other":"#68706b"};
@@ -792,7 +801,7 @@ function pinsSvg(scale){
   for(const p of act){const c=coordsOf(p);if(!c)continue;const [x,y]=proj(c[0],c[1]);const sel=UI.mapSel===p.id;const col=PIN_COLORS[p.jobType]||"#68706b";const k=scale;
     s+=`<g class="pin" data-pid="${p.id}" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k})" style="cursor:${UI.mapEdit?"move":"pointer"}">
       <path d="M0 0 C -9 -12 -11 -16 -11 -21 A 11 11 0 1 1 11 -21 C 11 -16 9 -12 0 0Z" fill="${col}" stroke="${sel?"#f2c14e":"#fff"}" stroke-width="${sel?3.5:2}"/>
-      <circle cy="-21" r="4.2" fill="#fff"/>${UI.route[p.id]?`<text y="-17" text-anchor="middle" font-size="11" font-weight="700" fill="${col}" font-family="IBM Plex Sans, system-ui, sans-serif">${routeOrder().indexOf(p.id)+1}</text>`:""}</g>`}
+      <circle cy="-21" r="4.2" fill="#fff"/>${UI.route[p.id]?`<text y="-17" text-anchor="middle" font-size="11" font-weight="700" fill="${col}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif">${routeOrder().indexOf(p.id)+1}</text>`:""}</g>`}
   return s;
 }
 function routeOrder(){return S.projects.filter(p=>p.status==="active"&&UI.route[p.id]).sort((a,b)=>(UI.route[a.id]-UI.route[b.id])).map(p=>p.id)}
@@ -977,7 +986,7 @@ async function importBackup(file){
   if(!d||d.app!=="chc-field-crm"){toast("That file isn't a Field CRM backup");return}
   confirmDlg(`Replace everything on this device with the backup from ${fmtDate(d.exportedAt)}? (${(d.projects||[]).length} projects, ${(d.contractors||[]).length} contractors)`,async()=>{
     for(const c of COLS)S[c]=Array.isArray(d[c])?d[c]:[];
-    S.settings=d.settings||{};lsSave();
+    S.settings=d.settings||{};lsWrite();
     if(hasIDB()&&d.files){for(const [k,v] of Object.entries(d.files)){try{const b=await (await fetch(v)).blob();await IDB.put(k,b);URLS.delete(k)}catch(e){}}}
     render();toast("Backup restored");
   });
@@ -1068,7 +1077,7 @@ document.addEventListener("change",async e=>{
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("#dlg"))closeDialog();else closeSheet()}
   if(e.key==="Enter"&&e.target.id==="newcheck"){e.preventDefault();const b=document.querySelector('[data-act="check-add"]');b&&b.click()}});
 $("#tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;go(b.dataset.tab)});
-function go(tab){UI.tab=tab;if(location.hash!=="#"+tab)try{history.replaceState(null,"","#"+tab)}catch(e){location.hash=tab}$("#main").innerHTML="";render();window.scrollTo(0,0)}
+function go(tab){UI.tab=tab;if(location.hash!=="#"+tab)try{history.replaceState(null,"","#"+tab)}catch(e){location.hash=tab}$("#main").innerHTML="";renderNow();window.scrollTo(0,0)}
 function fromHash(){const h=(location.hash||"").slice(1);if(["projects","contractors","map","office"].includes(h)&&h!==UI.tab){UI.tab=h;$("#main").innerHTML="";render()}}
 window.addEventListener("hashchange",fromHash);
 const h0=(location.hash||"").slice(1);if(["projects","contractors","map","office"].includes(h0))UI.tab=h0;
